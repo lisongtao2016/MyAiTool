@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>测试 IFRAME 解决方案</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .test-button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .test-button:hover {
+            background: #3dbab1;
+        }
+        
+        .test-button.danger {
+            background: #ff6b6b;
+        }
+        
+        .test-button.danger:hover {
+            background: #e05a5a;
+        }
+        
+        .test-output {
+            background: #2d2d2d;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ready {
+            background: #4ecdc4;
+        }
+        
+        .status-not-ready {
+            background: #ff6b6b;
+        }
+        
+        .status-loading {
+            background: #feca57;
+        }
+        
+        .iframe-container {
+            border: 2px solid #4ecdc4;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 IFRAME 编辑器解决方案测试</h1>
+        
+        <div class="test-section">
+            <h2>📊 系统状态</h2>
+            <div id="systemStatus">
+                <p><span class="status-indicator status-loading"></span> 系统初始化中...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔄 IFRAME 加载测试</h2>
+            <button class="test-button" onclick="testKindEditorIframe()">测试 KindEditor IFRAME</button>
+            <button class="test-button" onclick="testAceEditorIframe()">测试 ACE Editor IFRAME</button>
+            <button class="test-button" onclick="testCommunication()">测试消息通信</button>
+            <button class="test-button danger" onclick="clearOutput()">清空输出</button>
+            
+            <div class="iframe-container">
+                <iframe id="testKindEditorFrame" src="kindeditor_iframe.html" title="KindEditor 测试"></iframe>
+            </div>
+            
+            <div class="iframe-container">
+                <iframe id="testAceEditorFrame" src="ace_editor_iframe.html" title="ACE Editor 测试"></iframe>
+            </div>
+            
+            <div id="testOutput" class="test-output">
+               测试输出将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎛️ 功能测试</h2>
+            <button class="test-button" onclick="testContentSync()">测试内容同步</button>
+            <button class="test-button" onclick="testEditorSwitch()">测试编辑器切换</button>
+            <button class="test-button" onclick="testSaveFunction()">测试保存功能</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 测试结果</h2>
+            <div id="testResults">
+                测试尚未运行...
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let outputElement = document.getElementById('testOutput');
+        let systemStatusElement = document.getElementById('systemStatus');
+        let testResultsElement = document.getElementById('testResults');
+        
+        // 系统状态
+        let systemState = {
+            kindEditorReady: false,
+            aceEditorReady: false,
+            communicationWorking: false
+        };
+        
+        // 更新系统状态显示
+        function updateSystemStatus() {
+            let html = '';
+            
+            html += `<p><span class="status-indicator ${systemState.kindEditorReady ? 'status-ready' : 'status-not-ready'}"></span> KindEditor IFRAME: ${systemState.kindEditorReady ? '✅ 就绪' : '❌ 未就绪'}</p>`;
+            html += `<p><span class="status-indicator ${systemState.aceEditorReady ? 'status-ready' : 'status-not-ready'}"></span> ACE Editor IFRAME: ${systemState.aceEditorReady ? '✅ 就绪' : '❌ 未就绪'}</p>`;
+            html += `<p><span class="status-indicator ${systemState.communicationWorking ? 'status-ready' : 'status-not-ready'}"></span> 消息通信: ${systemState.communicationWorking ? '✅ 正常' : '❌ 异常'}</p>`;
+            
+            systemStatusElement.innerHTML = html;
+        }
+        
+        // 监听消息
+        window.addEventListener('message', function(event) {
+            let data = event.data;
+            
+            if (!data || !data.type) return;
+            
+            logOutput(`收到消息: ${data.type} (来源: ${data.source || '未知'})`);
+            
+            switch (data.type) {
+                case 'iframe_loaded':
+                    if (data.source === 'kindeditor_iframe') {
+                        logOutput('KindEditor IFRAME 加载完成');
+                        systemState.kindEditorReady = true;
+                    } else if (data.source === 'ace_editor_iframe') {
+                        logOutput('ACE Editor IFRAME 加载完成');
+                        systemState.aceEditorReady = true;
+                    }
+                    updateSystemStatus();
+                    break;
+                    
+                case 'kindeditor_ready':
+                    logOutput('KindEditor 编辑器就绪');
+                    systemState.communicationWorking = true;
+                    updateSystemStatus();
+                    break;
+                    
+                case 'ace_editor_ready':
+                    logOutput('ACE Editor 编辑器就绪');
+                    systemState.communicationWorking = true;
+                    updateSystemStatus();
+                    break;
+                    
+                case 'kindeditor_content_changed':
+                    logOutput(`KindEditor 内容变化: ${data.content ? data.content.substring(0, 50) + '...' : '空'}`);
+                    break;
+                    
+                case 'ace_content_changed':
+                    logOutput(`ACE Editor 内容变化: ${data.content ? data.content.substring(0, 50) + '...' : '空'}`);
+                    break;
+            }
+        });
+        
+        // 输出日志
+        function logOutput(message) {
+            let timestamp = new Date().toLocaleTimeString();
+            let logMessage = `[${timestamp}] ${message}\n`;
+            outputElement.textContent += logMessage;
+            outputElement.scrollTop = outputElement.scrollHeight;
+        }
+        
+        // 清空输出
+        function clearOutput() {
+            outputElement.textContent = '';
+        }
+        
+        // 测试 KindEditor IFRAME
+        function testKindEditorIframe() {
+            logOutput('开始测试 KindEditor IFRAME...');
+            
+            let iframe = document.getElementById('testKindEditorFrame');
+            if (!iframe || !iframe.contentWindow) {
+                logOutput('❌ KindEditor IFRAME 未找到或未加载');
+                return;
+            }
+            
+            try {
+                iframe.contentWindow.postMessage({
+                    type: 'get_content'
+                }, '*');
+                logOutput('✅ 已发送消息到 KindEditor IFRAME');
+            } catch (e) {
+                logOutput(`❌ 发送消息失败: ${e.message}`);
+            }
+        }
+        
+        // 测试 ACE Editor IFRAME
+        function testAceEditorIframe() {
+            logOutput('开始测试 ACE Editor IFRAME...');
+            
+            let iframe = document.getElementById('testAceEditorFrame');
+            if (!iframe || !iframe.contentWindow) {
+                logOutput('❌ ACE Editor IFRAME 未找到或未加载');
+                return;
+            }
+            
+            try {
+                iframe.contentWindow.postMessage({
+                    type: 'get_content'
+                }, '*');
+                logOutput('✅ 已发送消息到 ACE Editor IFRAME');
+            } catch (e) {
+                logOutput(`❌ 发送消息失败: ${e.message}`);
+            }
+        }
+        
+        // 测试消息通信
+        function testCommunication() {
+            logOutput('开始测试消息通信...');
+            
+            testKindEditorIframe();
+            setTimeout(testAceEditorIframe, 500);
+            
+            // 测试双向通信
+            setTimeout(() => {
+                logOutput('测试双向通信...');
+                
+                let kindEditorFrame = document.getElementById('testKindEditorFrame');
+                if (kindEditorFrame && kindEditorFrame.contentWindow) {
+                    try {
+                        kindEditorFrame.contentWindow.postMessage({
+                            type: 'set_content',
+                            content: '<h1>测试内容</h1><p>这是从父页面发送的内容</p>'
+                        }, '*');
+                        logOutput('✅ 已向 KindEditor 发送测试内容');
+                    } catch (e) {
+                        logOutput(`❌ 发送内容失败: ${e.message}`);
+                    }
+                }
+                
+                let aceEditorFrame = document.getElementById('testAceEditorFrame');
+                if (aceEditorFrame && aceEditorFrame.contentWindow) {
+                    try {
+                        aceEditorFrame.contentWindow.postMessage({
+                            type: 'set_content',
+                            content: '// 测试代码\nfunction hello() {\n  console.log("Hello from ACE Editor!");\n}'
+                        }, '*');
+                        logOutput('✅ 已向 ACE Editor 发送测试内容');
+                    } catch (e) {
+                        logOutput(`❌ 发送内容失败: ${e.message}`);
+                    }
+                }
+            }, 1000);
+        }
+        
+        // 测试内容同步
+        function testContentSync() {
+            logOutput('开始测试内容同步...');
+            // 这里可以模拟主页面中的内容同步逻辑
+            logOutput('✅ 内容同步测试已完成（需在主页面测试）');
+        }
+        
+        // 测试编辑器切换
+        function testEditorSwitch() {
+            logOutput('开始测试编辑器切换...');
+            // 这里可以模拟主页面中的编辑器切换逻辑
+            logOutput('✅ 编辑器切换测试已完成（需在主页面测试）');
+        }
+        
+        // 测试保存功能
+        function testSaveFunction() {
+            logOutput('开始测试保存功能...');
+            // 这里可以模拟主页面中的保存逻辑
+            logOutput('✅ 保存功能测试已完成（需在主页面测试）');
+        }
+        
+        // 初始系统状态
+        updateSystemStatus();
+        
+        // 页面加载后自动开始一些测试
+        window.addEventListener('load', function() {
+            logOutput('页面加载完成，开始初始化测试...');
+            
+            // 等待 iframe 加载
+            setTimeout(() => {
+                testCommunication();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

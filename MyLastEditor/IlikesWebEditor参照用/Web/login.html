@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IlikesWebEditor - 用户登录</title>
+    
+    <!-- jQuery -->
+    <script src="js/jquery-4.0.0.min.js" defer></script>
+    
+    <!-- Login CSS -->
+    <link rel="stylesheet" href="login.css">
+    
+    <!-- Login JavaScript -->
+    <script src="login.js" defer></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🔐 IlikesWebEditor</h1>
+            <p>欢迎使用您的个人代码编辑器</p>
+        </div>
+        
+        <div class="login-content">
+            <!-- 错误消息 -->
+            <div id="errorMessage" class="error-message"></div>
+            
+            <!-- 成功消息 -->
+            <div id="successMessage" class="success-message"></div>
+            
+            <!-- 登录表单 -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="loginIdentifier">用户名或邮箱</label>
+                    <input type="text" id="loginIdentifier" class="form-control" placeholder="输入用户名或邮箱地址" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="输入密码" required>
+                </div>
+                
+                <button id="btnLogin" class="btn btn-primary" onclick="login()">登录</button>
+                
+                <div class="form-switch">
+                    <p>还没有账户？ <a href="javascript:void(0)" onclick="showRegisterForm()">立即注册</a></p>
+                </div>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div id="registerForm" style="display: none;">
+                <div class="form-group form-group-required">
+                    <label for="registerUsername">用户名</label>
+                    <input type="text" id="registerUsername" class="form-control" placeholder="输入用户名（3-20个字符）" required>
+                </div>
+                
+                <div class="form-group form-group-required">
+                    <label for="registerEmail">邮箱地址</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="输入有效的邮箱地址" required>
+                    <div class="password-rules">必须提供有效的邮箱地址用于验证和找回密码</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerDisplayName">显示名称</label>
+                    <input type="text" id="registerDisplayName" class="form-control" placeholder="输入显示名称（可选）">
+                </div>
+                
+                <div class="form-group form-group-required">
+                    <label for="registerPassword">密码</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="输入密码" required>
+                    <div class="password-rules">
+                        密码要求：
+                        <ul>
+                            <li>至少6个字符</li>
+                            <li>包含字母和数字</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="form-group form-group-required">
+                    <label for="registerConfirmPassword">确认密码</label>
+                    <input type="password" id="registerConfirmPassword" class="form-control" placeholder="再次输入密码" required>
+                </div>
+                
+                <button id="btnRegister" class="btn btn-primary" onclick="register()">注册</button>
+                
+                <div class="form-switch">
+                    <p>已有账户？ <a href="javascript:void(0)" onclick="showLoginForm()">返回登录</a></p>
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p>© 2026 IlikesWebEditor - 您的个人代码编辑器</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

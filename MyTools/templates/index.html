@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团队协作日程管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* 登录/注册页面样式 */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-box h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        /* 主应用样式 */
+        .app-container {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-header h1 {
+            font-size: 1.4em;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .username {
+            font-size: 1.1em;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .app-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 12px;
+            border-right: 2px solid #eee;
+        }
+
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            font-size: 0.9em;
+        }
+
+        .project-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .project-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .main-content {
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 3px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 0.85em;
+        }
+
+        .schedule-card {
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .schedule-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .schedule-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .schedule-meta {
+            display: flex;
+            gap: 10px;
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .priority-high,
+        .priority-medium,
+        .priority-low,
+        .status-pending,
+        .status-completed {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .priority-high { background: #dc3545; color: white; }
+        .priority-medium { background: #ffc107; color: #333; }
+        .priority-low { background: #28a745; color: white; }
+        .status-pending { background: #17a2b8; color: white; }
+        .status-completed { background: #28a745; color: white; }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .member-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .member-item {
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* 日历视图样式 */
+        .calendar-container {
+            display: none;
+        }
+
+        .calendar-container.active {
+            display: block;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .calendar-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+
+        .calendar-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: #667eea;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.4;
+            background: #f8f9fa;
+        }
+
+        .calendar-day.today {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .calendar-day.today .calendar-day-number {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .calendar-event {
+            padding: 3px 6px;
+            margin-bottom: 3px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .calendar-event.high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .calendar-event.medium {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .calendar-event.low {
+            background: #28a745;
+            color: white;
+        }
+
+        .calendar-event.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录/注册页面 -->
+    <div id="authPage" class="auth-container">
+        <div class="auth-box">
+            <h2>📅 团队协作日程系统</h2>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="showAuthTab('login')">登录</button>
+                <button class="auth-tab" onclick="showAuthTab('register')">注册</button>
+            </div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="loginUsername" required placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" required placeholder="请输入密码">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
+            </form>
+
+            <!-- 注册表单 -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="regUsername" required placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="regEmail" required placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="regPassword" required placeholder="请输入密码">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
+            </form>
+
+            <div id="authMessage" class="message"></div>
+        </div>
+    </div>
+
+    <!-- 主应用页面 -->
+    <div id="appPage" class="app-container">
+        <div class="app-header">
+            <h1>📅 团队协作日程系统</h1>
+            <div class="user-info">
+                <span class="username" id="currentUsername"></span>
+                <button class="btn-logout" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+
+        <div class="app-content">
+            <!-- 侧边栏 - 项目列表 -->
+            <div class="sidebar">
+                <h3>📁 我的项目</h3>
+                <button class="btn btn-primary" onclick="showCreateProjectModal()" style="width: 100%; margin-bottom: 12px; padding: 8px;">+ 创建项目</button>
+                <ul class="project-list" id="projectList">
+                    <!-- 项目列表动态加载 -->
+                </ul>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="main-content">
+                <div id="message" class="message"></div>
+
+                <!-- 统计卡片 -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="totalCount">0</h3>
+                        <p>总日程数</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingCount">0</h3>
+                        <p>待完成</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="completedCount">0</h3>
+                        <p>已完成</p>
+                    </div>
+                </div>
+
+                <!-- 筛选区域 -->
+                <div class="section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin: 0;">🔍 筛选</h2>
+                        <div>
+                            <button class="btn btn-primary" onclick="showAddScheduleModal()" style="margin-right: 8px;">➕ 添加日程</button>
+                            <button class="btn btn-primary" onclick="showListView()" id="listViewBtn" style="margin-right: 8px;">📋 列表视图</button>
+                            <button class="btn" onclick="showCalendarView()" id="calendarViewBtn" style="background: #6c757d; color: white;">📅 日历视图</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>按日期筛选</label>
+                            <input type="date" id="filterDate" onchange="loadSchedules()">
+                        </div>
+                        <div class="form-group">
+                            <label>按优先级筛选</label>
+                            <select id="filterPriority" onchange="loadSchedules()">
+                                <option value="">所有优先级</option>
+                                <option value="high">高优先级</option>
+                                <option value="medium">中优先级</option>
+                                <option value="low">低优先级</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>按状态筛选</label>
+                            <select id="filterStatus" onchange="loadSchedules()">
+                                <option value="">所有状态</option>
+                                <option value="pending">待完成</option>
+                                <option value="completed">已完成</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="clearFilters()">清除筛选</button>
+                </div>
+
+                <!-- 日程列表 -->
+                <div class="section" id="listView">
+                    <h2>📋 日程列表</h2>
+                    <div id="loading" style="text-align: center; padding: 20px; color: #667eea;">加载中...</div>
+                    <div id="scheduleList"></div>
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <p>暂无日程，请先选择项目并添加日程</p>
+                    </div>
+                </div>
+
+                <!-- 日历视图 -->
+                <div class="calendar-container" id="calendarView">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="previousWeek()">◀ 上周</button>
+                        <h3 id="calendarTitle">2026年 第18周</h3>
+                        <button class="calendar-nav-btn" onclick="nextWeek()">下周 ▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid" style="grid-template-columns: repeat(7, 1fr);">
+                        <!-- 日历内容动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建项目模态框 -->
+    <div id="createProjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>创建新项目</h2>
+                <button class="modal-close" onclick="closeModal('createProjectModal')">&times;</button>
+            </div>
+            <form id="createProjectForm">
+                <div class="form-group">
+                    <label>项目名称 *</label>
+                    <input type="text" id="projectName" required placeholder="请输入项目名称">
+                </div>
+                <div class="form-group">
+                    <label>项目描述</label>
+                    <textarea id="projectDescription" placeholder="请输入项目描述（可选）"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">创建项目</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加成员模态框 -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加项目成员</h2>
+                <button class="modal-close" onclick="closeModal('addMemberModal')">&times;</button>
+            </div>
+            <form id="addMemberForm">
+                <div class="form-group">
+                    <label>用户名 *</label>
+                    <input type="text" id="memberUsername" required placeholder="请输入要添加的用户名">
+                </div>
+                <div class="form-group">
+                    <label>角色</label>
+                    <select id="memberRole">
+                        <option value="member">成员</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">添加成员</button>
+            </form>
+            <h3 style="margin-top: 20px; margin-bottom: 10px;">当前成员:</h3>
+            <ul class="member-list" id="memberList"></ul>
+        </div>
+    </div>
+
+    <!-- 添加/编辑日程模态框 -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="scheduleModalTitle">➕ 添加日程</h2>
+                <button class="modal-close" onclick="closeModal('scheduleModal')">&times;</button>
+            </div>
+            <form id="scheduleForm">
+                <input type="hidden" id="scheduleId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>标题 *</label>
+                        <input type="text" id="title" required placeholder="请输入日程标题">
+                    </div>
+                    <div class="form-group">
+                        <label>日期 *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>时间</label>
+                        <input type="time" id="time">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>优先级</label>
+                        <select id="priority">
+                            <option value="low">低</option>
+                            <option value="medium" selected>中</option>
+                            <option value="high">高</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="status">
+                            <option value="pending" selected>待完成</option>
+                            <option value="completed">已完成</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>分配给</label>
+                        <select id="assignedTo">
+                            <option value="">不分配</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea id="description" placeholder="请输入日程描述（可选）"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%;">添加日程</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentUser = null;
+        let currentProject = null;
+        let projects = [];
+
+        // HTML转义函数
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        // 检查认证状态
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        currentUser = result.user;
+                        showApp();
+                    } else {
+                        showAuth();
+                    }
+                } else {
+                    showAuth();
+                }
+            } catch (error) {
+                showAuth();
+            }
+        }
+
+        // 显示登录页面
+        function showAuth() {
+            document.getElementById('authPage').style.display = 'flex';
+            document.getElementById('appPage').style.display = 'none';
+        }
+
+        // 显示应用页面
+        function showApp() {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('appPage').style.display = 'block';
+            document.getElementById('currentUsername').textContent = currentUser.username;
+            loadProjects();
+        }
+
+        // 显示添加日程模态框
+        function showAddScheduleModal() {
+            if (!currentProject) {
+                showMessage('请先选择一个项目', 'error');
+                return;
+            }
+            resetScheduleForm();
+            document.getElementById('scheduleModalTitle').textContent = '➕ 添加日程';
+            document.getElementById('submitBtn').textContent = '添加日程';
+            document.getElementById('scheduleModal').classList.add('active');
+        }
+
+        // 关闭模态框时重置表单
+        const originalCloseModal = closeModal;
+        closeModal = function(modalId) {
+            originalCloseModal(modalId);
+            if (modalId === 'scheduleModal') {
+                resetScheduleForm();
+            }
+        };
+
+        // 切换登录/注册标签
+        function showAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        // 用户注册
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('regUsername').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAuthMessage('注册成功！请登录', 'success');
+                    showAuthTab('login');
+                    document.getElementById('registerForm').reset();
+                } else {
+                    showAuthMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showAuthMessage('注册失败: ' + error.message, 'error');
+            }
+        });
+
+        // 用户登录
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentUser = result.user;
+                    showApp();
+                } else {
+                    showAuthMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showAuthMessage('登录失败: ' + error.message, 'error');
+            }
+        });
+
+        // 退出登录
+        async function logout() {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+                currentUser = null;
+                currentProject = null;
+                showAuth();
+            } catch (error) {
+                console.error('登出失败:', error);
+            }
+        }
+
+        // 显示认证消息
+        function showAuthMessage(text, type) {
+            const msgEl = document.getElementById('authMessage');
+            msgEl.textContent = text;
+            msgEl.className = 'message ' + type;
+            msgEl.style.display = 'block';
+            
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // 加载项目列表
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    projects = result.data;
+                    displayProjects();
+                    
+                    // 如果有项目，自动选择第一个
+                    if (projects.length > 0 && !currentProject) {
+                        selectProject(projects[0].id);
+                    }
+                }
+            } catch (error) {
+                showMessage('加载项目失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示项目列表
+        function displayProjects() {
+            const list = document.getElementById('projectList');
+            list.innerHTML = '';
+            
+            projects.forEach(project => {
+                const li = document.createElement('li');
+                li.className = 'project-item' + (currentProject === project.id ? ' active' : '');
+                li.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${project.name}</span>
+                        ${project.owner_id === currentUser.id ? 
+                            `<button onclick="event.stopPropagation(); showAddMemberModal(${project.id})" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">+</button>` 
+                            : ''}
+                    </div>
+                `;
+                li.onclick = () => selectProject(project.id);
+                list.appendChild(li);
+            });
+        }
+
+        // 选择项目
+        function selectProject(projectId) {
+            currentProject = projectId;
+            displayProjects();
+            loadSchedules();
+            loadProjectMembers();
+        }
+
+        // 创建项目
+        document.getElementById('createProjectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('projectName').value,
+                description: document.getElementById('projectDescription').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('项目创建成功', 'success');
+                    closeModal('createProjectModal');
+                    document.getElementById('createProjectForm').reset();
+                    loadProjects();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('创建失败: ' + error.message, 'error');
+            }
+        });
+
+        // 显示创建项目模态框
+        function showCreateProjectModal() {
+            document.getElementById('createProjectModal').classList.add('active');
+        }
+
+        // 显示添加成员模态框
+        async function showAddMemberModal(projectId) {
+            currentProject = projectId;
+            document.getElementById('addMemberModal').classList.add('active');
+            await loadProjectMembers();
+        }
+
+        // 加载项目成员
+        async function loadProjectMembers() {
+            if (!currentProject) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects/${currentProject}/members`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const memberList = document.getElementById('memberList');
+                    memberList.innerHTML = '';
+                    
+                    result.data.forEach(member => {
+                        const li = document.createElement('li');
+                        li.className = 'member-item';
+                        li.innerHTML = `
+                            <span>${member.username} (${member.role})</span>
+                            <small style="color: #999;">${member.email}</small>
+                        `;
+                        memberList.appendChild(li);
+                    });
+                    
+                    // 更新分配给下拉框
+                    updateAssignedToSelect(result.data);
+                }
+            } catch (error) {
+                console.error('加载成员失败:', error);
+            }
+        }
+
+        // 更新分配给下拉框
+        function updateAssignedToSelect(members) {
+            const select = document.getElementById('assignedTo');
+            select.innerHTML = '<option value="">不分配</option>';
+            
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.username;
+                select.appendChild(option);
+            });
+        }
+
+        // 添加成员
+        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('memberUsername').value,
+                role: document.getElementById('memberRole').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects/${currentProject}/members`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('成员添加成功', 'success');
+                    document.getElementById('addMemberForm').reset();
+                    await loadProjectMembers();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('添加失败: ' + error.message, 'error');
+            }
+        });
+
+        // 加载日程
+        async function loadSchedules() {
+            if (!currentProject) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            
+            try {
+                let url = `${API_BASE}/schedules?project_id=${currentProject}`;
+                const filterDate = document.getElementById('filterDate').value;
+                
+                if (filterDate) {
+                    url += `&date=${filterDate}`;
+                }
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (result.success && result.data.length > 0) {
+                    displaySchedules(result.data);
+                    updateStats(result.data);
+                } else {
+                    document.getElementById('scheduleList').innerHTML = '';
+                    document.getElementById('emptyState').style.display = 'block';
+                    updateStats([]);
+                }
+            } catch (error) {
+                showMessage('加载数据失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示日程列表
+        function displaySchedules(schedules) {
+            const container = document.getElementById('scheduleList');
+            container.innerHTML = '';
+            
+            const filterPriority = document.getElementById('filterPriority').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            
+            let filteredSchedules = schedules;
+            if (filterPriority) {
+                filteredSchedules = filteredSchedules.filter(s => s.priority === filterPriority);
+            }
+            if (filterStatus) {
+                filteredSchedules = filteredSchedules.filter(s => s.status === filterStatus);
+            }
+            
+            // 按日期和时间排序（从早到晚）
+            filteredSchedules.sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + (a.time || '00:00'));
+                const dateB = new Date(b.date + ' ' + (b.time || '00:00'));
+                return dateA - dateB;
+            });
+            
+            if (filteredSchedules.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('emptyState').style.display = 'none';
+            
+            // 按项目分组
+            const projectGroups = {};
+            filteredSchedules.forEach(schedule => {
+                if (!projectGroups[schedule.project_id]) {
+                    projectGroups[schedule.project_id] = [];
+                }
+                projectGroups[schedule.project_id].push(schedule);
+            });
+            
+            // 渲染每个项目的日程
+            Object.keys(projectGroups).forEach(projectId => {
+                const schedules = projectGroups[projectId];
+                
+                // 获取项目名称(从第一个日程中)
+                const projectName = schedules[0].project_name || `项目 ${projectId}`;
+                
+                // 创建项目容器
+                const projectContainer = document.createElement('div');
+                projectContainer.style.cssText = 'margin-bottom: 20px; border: 2px solid #eee; border-radius: 10px; overflow: hidden;';
+                
+                // 项目标题
+                const projectHeader = document.createElement('div');
+                projectHeader.style.cssText = 'padding: 12px 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; font-size: 1.1em; display: flex; justify-content: space-between; align-items: center;';
+                projectHeader.innerHTML = `
+                    <span>📁 ${projectName}</span>
+                    <span style="font-size: 0.85em; opacity: 0.9;">${schedules.length} 个日程</span>
+                `;
+                projectContainer.appendChild(projectHeader);
+                
+                // 日程列表容器
+                const schedulesList = document.createElement('div');
+                schedulesList.style.cssText = 'padding: 10px;';
+                
+                // 按日期排序
+                schedules.sort((a, b) => {
+                    const dateA = new Date(a.date + ' ' + (a.time || '00:00'));
+                    const dateB = new Date(b.date + ' ' + (b.time || '00:00'));
+                    return dateA - dateB;
+                });
+                
+                // 添加每个日程
+                schedules.forEach(schedule => {
+                    const card = document.createElement('div');
+                    card.className = 'schedule-card';
+                    card.style.cssText = 'margin-bottom: 8px; padding: 10px;';
+                    
+                    const priorityClass = `priority-${schedule.priority}`;
+                    const priorityText = schedule.priority === 'high' ? '高' : schedule.priority === 'medium' ? '中' : '低';
+                    
+                    const statusClass = `status-${schedule.status}`;
+                    const statusText = schedule.status === 'pending' ? '待完成' : '已完成';
+                    
+                    // 第一行：标题和状态标签
+                    const titleRow = document.createElement('div');
+                    titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;';
+                    titleRow.innerHTML = `
+                        <div class="schedule-title" style="font-size: 1em; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(schedule.title)}</div>
+                        <div style="margin-left: 10px; flex-shrink: 0;">
+                            <span class="${priorityClass}">${priorityText}</span>
+                            <span class="${statusClass}" style="margin-left: 6px;">${statusText}</span>
+                        </div>
+                    `;
+                    card.appendChild(titleRow);
+                    
+                    // 第二行：日期时间和操作按钮
+                    const secondRow = document.createElement('div');
+                    secondRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+                    
+                    const metaInfo = document.createElement('div');
+                    metaInfo.style.cssText = 'font-size: 0.8em; color: #666;';
+                    metaInfo.innerHTML = `
+                        <span>📅 ${schedule.date}</span>
+                        ${schedule.time ? `<span style="margin-left: 8px;">⏰ ${schedule.time}</span>` : ''}
+                        ${schedule.assigned_username ? `<span style="margin-left: 8px;">👤 ${schedule.assigned_username}</span>` : ''}
+                    `;
+                    secondRow.appendChild(metaInfo);
+                    
+                    const actions = document.createElement('div');
+                    actions.style.cssText = 'display: flex; gap: 6px; flex-shrink: 0;';
+                    actions.innerHTML = `
+                        <button class="btn btn-edit" onclick="editSchedule(${schedule.id}, '${escapeHtml(schedule.title)}', '${schedule.date}', '${schedule.time || ''}', '${escapeHtml(schedule.description || '')}', '${schedule.priority}', '${schedule.status}', ${schedule.assigned_to || 'null'})" style="padding: 4px 10px; font-size: 11px;">编辑</button>
+                        ${schedule.status === 'pending' ? `<button class="btn btn-success" onclick="completeSchedule(${schedule.id})" style="padding: 4px 10px; font-size: 11px;">✓</button>` : ''}
+                        <button class="btn btn-danger" onclick="deleteSchedule(${schedule.id})" style="padding: 4px 10px; font-size: 11px;">×</button>
+                    `;
+                    secondRow.appendChild(actions);
+                    
+                    card.appendChild(secondRow);
+                    schedulesList.appendChild(card);
+                });
+                
+                projectContainer.appendChild(schedulesList);
+                container.appendChild(projectContainer);
+            });
+        }
+
+        // 更新统计数据
+        function updateStats(schedules) {
+            const total = schedules.length;
+            const pending = schedules.filter(s => s.status === 'pending').length;
+            const completed = schedules.filter(s => s.status === 'completed').length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('completedCount').textContent = completed;
+        }
+
+        // 提交日程表单
+        document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentProject) {
+                showMessage('请先选择一个项目', 'error');
+                return;
+            }
+            
+            const scheduleId = document.getElementById('scheduleId').value;
+            const assignedTo = document.getElementById('assignedTo').value;
+            
+            const data = {
+                title: document.getElementById('title').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value || null,
+                description: document.getElementById('description').value,
+                priority: document.getElementById('priority').value,
+                status: document.getElementById('status').value,
+                project_id: currentProject,
+                assigned_to: assignedTo ? parseInt(assignedTo) : null
+            };
+            
+            try {
+                let response;
+                if (scheduleId) {
+                    response = await fetch(`${API_BASE}/schedules/${scheduleId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE}/schedules`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    resetScheduleForm();
+                    closeModal('scheduleModal');
+                    loadSchedules();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('操作失败: ' + error.message, 'error');
+            }
+        });
+
+        // 编辑日程
+        function editSchedule(id, title, date, time, description, priority, status, assignedTo) {
+            document.getElementById('scheduleId').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('date').value = date;
+            document.getElementById('time').value = time;
+            document.getElementById('description').value = description;
+            document.getElementById('priority').value = priority;
+            document.getElementById('status').value = status;
+            if (assignedTo) {
+                document.getElementById('assignedTo').value = assignedTo;
+            }
+            document.getElementById('scheduleModalTitle').textContent = '✏️ 编辑日程';
+            document.getElementById('submitBtn').textContent = '更新日程';
+            document.getElementById('scheduleModal').classList.add('active');
+        }
+
+        // 标记完成
+        async function completeSchedule(scheduleId) {
+            if (!confirm('确定要标记为完成吗?')) {
+                return;
+            }
+            
+            try {
+                // 从 allSchedules 中查找完整数据
+                const schedule = allSchedules.find(s => s.id === scheduleId);
+                if (!schedule) {
+                    showMessage('找不到日程数据', 'error');
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE}/schedules/${scheduleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: schedule.title,
+                        date: schedule.date,
+                        time: schedule.time,
+                        description: schedule.description || '',
+                        priority: schedule.priority,
+                        status: 'completed',
+                        assigned_to: schedule.assigned_to
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('日程已标记为完成', 'success');
+                    loadSchedules();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('操作失败: ' + error.message, 'error');
+            }
+        }
+
+        // 删除日程
+        async function deleteSchedule(scheduleId) {
+            if (!confirm('确定要删除这个日程吗?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/schedules/${scheduleId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    loadSchedules();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        // 重置日程表单
+        function resetScheduleForm() {
+            document.getElementById('scheduleForm').reset();
+            document.getElementById('scheduleId').value = '';
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('submitBtn').textContent = '添加日程';
+        }
+
+        // 清除筛选
+        function clearFilters() {
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterStatus').value = '';
+            loadSchedules();
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // ==================== 日历视图功能 ====================
+        let currentCalendarDate = new Date();
+        let allSchedules = [];
+
+        // 显示列表视图
+        function showListView() {
+            document.getElementById('listView').style.display = 'block';
+            document.getElementById('calendarView').classList.remove('active');
+            document.getElementById('listViewBtn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            document.getElementById('listViewBtn').style.color = 'white';
+            document.getElementById('calendarViewBtn').style.background = '#6c757d';
+            document.getElementById('calendarViewBtn').style.color = 'white';
+        }
+
+        // 显示日历视图
+        function showCalendarView() {
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('calendarView').classList.add('active');
+            document.getElementById('calendarViewBtn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            document.getElementById('calendarViewBtn').style.color = 'white';
+            document.getElementById('listViewBtn').style.background = '#6c757d';
+            document.getElementById('listViewBtn').style.color = 'white';
+            renderCalendar();
+        }
+
+        // 渲染日历
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // 更新标题
+            document.getElementById('calendarTitle').textContent = `${year}年 ${month + 1}月`;
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const div = document.createElement('div');
+                div.className = 'calendar-weekday';
+                div.textContent = day;
+                grid.appendChild(div);
+            });
+            
+            // 获取当月第一天和最后一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // 获取上个月的最后几天
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const dayDiv = createDayElement(
+                    prevMonthLastDay - i,
+                    true,
+                    new Date(year, month - 1, prevMonthLastDay - i)
+                );
+                grid.appendChild(dayDiv);
+            }
+            
+            // 获取当月的所有天
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                const isToday = currentDate.toDateString() === today.toDateString();
+                const dayDiv = createDayElement(day, false, currentDate, isToday);
+                grid.appendChild(dayDiv);
+            }
+            
+            // 获取下个月的前几天
+            const totalCells = grid.children.length;
+            const remainingCells = 42 - totalCells; // 6行 x 7列
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayDiv = createDayElement(
+                    day,
+                    true,
+                    new Date(year, month + 1, day)
+                );
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        // 创建日期单元格
+        function createDayElement(day, isOtherMonth, date, isToday = false) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day';
+            if (isOtherMonth) div.classList.add('other-month');
+            if (isToday) div.classList.add('today');
+            
+            const dateStr = formatDate(date);
+            
+            // 添加日期数字
+            const numberDiv = document.createElement('div');
+            numberDiv.className = 'calendar-day-number';
+            numberDiv.textContent = day;
+            div.appendChild(numberDiv);
+            
+            // 添加该日期的日程
+            const daySchedules = allSchedules.filter(s => s.date === dateStr);
+            daySchedules.slice(0, 4).forEach(schedule => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `calendar-event ${schedule.priority}`;
+                if (schedule.status === 'completed') {
+                    eventDiv.classList.add('completed');
+                }
+                eventDiv.textContent = schedule.title;
+                eventDiv.title = `${schedule.title}\n时间: ${schedule.time || '全天'}\n优先级: ${getPriorityText(schedule.priority)}`;
+                eventDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    editScheduleFromCalendar(schedule);
+                };
+                div.appendChild(eventDiv);
+            });
+            
+            if (daySchedules.length > 4) {
+                const moreDiv = document.createElement('div');
+                moreDiv.style.fontSize = '0.7em';
+                moreDiv.style.color = '#999';
+                moreDiv.style.textAlign = 'center';
+                moreDiv.textContent = `+${daySchedules.length - 4} 更多`;
+                div.appendChild(moreDiv);
+            }
+            
+            // 点击日期快速添加日程
+            div.onclick = () => {
+                if (!isOtherMonth) {
+                    quickAddSchedule(dateStr);
+                }
+            };
+            
+            return div;
+        }
+
+        // 格式化日期为 YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 获取优先级文本
+        function getPriorityText(priority) {
+            const map = { high: '高', medium: '中', low: '低' };
+            return map[priority] || priority;
+        }
+
+        // 上一月
+        function previousMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        // 下一月
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // 从日历编辑日程
+        function editScheduleFromCalendar(schedule) {
+            editSchedule(
+                schedule.id,
+                schedule.title,
+                schedule.date,
+                schedule.time || '',
+                schedule.description || '',
+                schedule.priority,
+                schedule.status,
+                schedule.assigned_to || null
+            );
+        }
+
+        // 快速添加日程
+        function quickAddSchedule(dateStr) {
+            if (!currentProject) {
+                showMessage('请先选择一个项目', 'error');
+                return;
+            }
+            resetScheduleForm();
+            document.getElementById('date').value = dateStr;
+            document.getElementById('scheduleModalTitle').textContent = '➕ 添加日程';
+            document.getElementById('submitBtn').textContent = '添加日程';
+            document.getElementById('scheduleModal').classList.add('active');
+        }
+
+        // 修改 loadSchedules 函数，保存所有日程用于日历显示
+        const originalLoadSchedules = loadSchedules;
+        loadSchedules = async function() {
+            await originalLoadSchedules();
+            // 重新获取所有日程用于日历
+            if (currentProject) {
+                try {
+                    const response = await fetch(`${API_BASE}/schedules?project_id=${currentProject}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        allSchedules = result.data;
+                        if (document.getElementById('calendarView').classList.contains('active')) {
+                            renderCalendar();
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载日历数据失败:', error);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

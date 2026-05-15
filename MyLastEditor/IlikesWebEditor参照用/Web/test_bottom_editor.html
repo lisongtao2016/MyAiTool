@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>测试底部编辑器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #007bff;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .test-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+        }
+        
+        .test-main-editor {
+            flex: 1;
+            min-height: 0;
+            border: 2px solid #28a745;
+            position: relative;
+        }
+        
+        .test-bottom-editor {
+            height: 300px;
+            border: 2px solid #dc3545;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bottom-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #333333;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .bottom-editor-header:hover {
+            background: #e8e8e8;
+        }
+        
+        #btnToggleTestBottomEditor {
+            background: transparent;
+            border: 1px solid #d0d0d0;
+            color: #666666;
+            width: 24px;
+            height: 24px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            padding: 0;
+        }
+        
+        #btnToggleTestBottomEditor:hover {
+            background: #f0f0f0;
+            border-color: #999999;
+            color: #333333;
+        }
+        
+        #testBottomKindEditorWrapper {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            display: block;
+            height: 250px;
+            transition: height 0.3s ease;
+        }
+        
+        .test-bottom-editor.collapsed #testBottomKindEditorWrapper {
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .test-bottom-editor.collapsed #btnToggleTestBottomEditor {
+            transform: rotate(-90deg);
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+    </style>
+    <!-- KindEditor -->
+    <link rel="stylesheet" href="js/kindeditor-master/themes/default/default.css" />
+    <script charset="utf-8" src="js/kindeditor-master/kindeditor-all.js"></script>
+    <script charset="utf-8" src="js/kindeditor-master/lang/zh-CN.js"></script>
+</head>
+<body>
+    <h1>测试底部编辑器</h1>
+    
+    <div class="test-container">
+        <div class="test-header">主编辑器区域</div>
+        <div class="test-main-editor">
+            <textarea id="testKindEditor"></textarea>
+        </div>
+        
+        <div class="test-bottom-editor">
+            <div class="bottom-editor-header">
+                <span>📝 底部编辑器</span>
+                <button type="button" id="btnToggleTestBottomEditor" title="展开/收缩">
+                    ▼
+                </button>
+            </div>
+            
+            <div id="testBottomKindEditorWrapper">
+                <textarea id="testBottomKindEditor"></textarea>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3>测试说明</h3>
+        <ul>
+            <li>这个测试页面模拟了主页面中的底部编辑器功能</li>
+            <li>顶部是主编辑器，底部是新增的编辑器</li>
+            <li>底部编辑器可以展开/收缩</li>
+            <li>两个编辑器都是独立的 KindEditor 实例</li>
+        </ul>
+        
+        <div class="status" id="status">
+            正在初始化...
+        </div>
+    </div>
+    
+    <script>
+        var statusEl = document.getElementById('status');
+        
+        function updateStatus(message) {
+            statusEl.innerHTML = '<strong>状态:</strong> ' + message;
+            console.log('状态:', message);
+        }
+        
+        updateStatus('开始初始化编辑器...');
+        
+        // 初始化主编辑器
+        var mainEditor = KindEditor.create('#testKindEditor', {
+            allowFileManager: true,
+            langType: 'zh-CN',
+            width: '100%',
+            height: '100%',
+            resizeType: 2,
+            afterCreate: function() {
+                updateStatus('主编辑器创建完成');
+                this.html('<p>这是主编辑器内容</p>');
+            }
+        });
+        
+        // 初始化底部编辑器
+        var bottomEditor = KindEditor.create('#testBottomKindEditor', {
+            allowFileManager: true,
+            langType: 'zh-CN',
+            width: '100%',
+            height: '100%',
+            resizeType: 2,
+            afterCreate: function() {
+                updateStatus('底部编辑器创建完成');
+                this.html('<p>这是底部编辑器内容</p>');
+            }
+        });
+        
+        updateStatus('所有编辑器初始化完成');
+        
+        // 底部编辑器展开/收缩功能
+        document.getElementById('btnToggleTestBottomEditor').addEventListener('click', function() {
+            var container = document.querySelector('.test-bottom-editor');
+            var button = this;
+            
+            if (container.classList.contains('collapsed')) {
+                // 展开编辑器
+                container.classList.remove('collapsed');
+                button.innerHTML = '▼';
+                console.log('底部编辑器已展开');
+                
+                // 如果底部编辑器已初始化，确保它正确显示
+                setTimeout(function() {
+                    bottomEditor.sync();
+                    console.log('底部编辑器已同步');
+                }, 100);
+            } else {
+                // 收缩编辑器
+                container.classList.add('collapsed');
+                button.innerHTML = '▶';
+                console.log('底部编辑器已收缩');
+            }
+        });
+        
+        // 底部编辑器标题点击也可以展开/收缩
+        document.querySelector('.bottom-editor-header').addEventListener('click', function(e) {
+            if (e.target.id !== 'btnToggleTestBottomEditor') {
+                document.getElementById('btnToggleTestBottomEditor').click();
+            }
+        });
+        
+        console.log('测试页面初始化完成');
+    </script>
+</body>
+</html>

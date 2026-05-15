@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录功能测试</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #4a6ee0 0%, #6a11cb 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .test-content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+        }
+        
+        .test-section h2 {
+            color: #4a6ee0;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .test-form {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4a6ee0;
+            box-shadow: 0 0 0 3px rgba(74, 110, 224, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4a6ee0 0%, #6a11cb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 110, 224, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .test-steps {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .test-steps ol {
+            padding-left: 20px;
+        }
+        
+        .test-steps li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success {
+            background: #28a745;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 登录功能测试</h1>
+            <p>测试用户注册、登录和会话管理功能</p>
+        </div>
+        
+        <div class="test-content">
+            <!-- 测试说明 -->
+            <div class="test-section">
+                <h2>📋 测试步骤</h2>
+                <div class="test-steps">
+                    <ol>
+                        <li><strong>第一步：</strong>使用注册表单创建新用户</li>
+                        <li><strong>第二步：</strong>检查注册结果（查看返回的用户信息）</li>
+                        <li><strong>第三步：</strong>使用登录表单登录刚才创建的账户</li>
+                        <li><strong>第四步：</strong>检查登录结果（查看返回的令牌和用户信息）</li>
+                        <li><strong>第五步：</strong>验证 localStorage 中是否保存了用户信息</li>
+                        <li><strong>第六步：</strong>点击"跳转到主页面"按钮，验证是否自动填充作者字段</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- 注册测试 -->
+            <div class="test-section">
+                <h2>📝 测试 1：用户注册</h2>
+                <div class="test-form">
+                    <div class="form-group">
+                        <label for="regUsername">用户名 *</label>
+                        <input type="text" id="regUsername" class="form-control" placeholder="输入用户名" value="testuser">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regEmail">邮箱 *</label>
+                        <input type="email" id="regEmail" class="form-control" placeholder="输入邮箱" value="test@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regDisplayName">显示名称</label>
+                        <input type="text" id="regDisplayName" class="form-control" placeholder="输入显示名称" value="测试用户">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regPassword">密码 *</label>
+                        <input type="password" id="regPassword" class="form-control" placeholder="输入密码" value="test123456">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="testRegister()">🚀 执行注册测试</button>
+                    
+                    <div id="registerResult" class="result-box"></div>
+                </div>
+            </div>
+            
+            <!-- 登录测试 -->
+            <div class="test-section">
+                <h2>🔐 测试 2：用户登录</h2>
+                <div class="test-form">
+                    <div class="form-group">
+                        <label for="loginIdentifier">用户名或邮箱 *</label>
+                        <input type="text" id="loginIdentifier" class="form-control" placeholder="输入用户名或邮箱" value="testuser">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">密码 *</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="输入密码" value="test123456">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="testLogin()">🚀 执行登录测试</button>
+                    
+                    <div id="loginResult" class="result-box"></div>
+                </div>
+            </div>
+            
+            <!-- 本地存储检查 -->
+            <div class="test-section">
+                <h2>💾 测试 3：检查本地存储</h2>
+                <button class="btn btn-secondary" onclick="checkLocalStorage()">🔍 检查 localStorage</button>
+                
+                <div id="storageResult" class="result-box"></div>
+            </div>
+            
+            <!-- 跳转测试 -->
+            <div class="test-section">
+                <h2>🎯 测试 4：跳转到主页面</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    登录后，点击此按钮将跳转到 WebForm1.aspx，并验证作者字段是否自动填充。
+                </p>
+                <button class="btn btn-primary" onclick="jumpToMainPage()">🚀 跳转到主页面</button>
+            </div>
+            
+            <!-- API 测试 -->
+            <div class="test-section">
+                <h2>🔌 测试 5：API 连通性测试</h2>
+                <button class="btn btn-secondary" onclick="testApiConnection()">🔍 测试 WebServ.asmx 连通性</button>
+                
+                <div id="apiResult" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试注册
+        function testRegister() {
+            var username = $('#regUsername').val().trim();
+            var email = $('#regEmail').val().trim();
+            var displayName = $('#regDisplayName').val().trim();
+            var password = $('#regPassword').val();
+            
+            if (!username || !email || !password) {
+                showResult('registerResult', '请填写所有必填字段', 'error');
+                return;
+            }
+            
+            showResult('registerResult', '正在发送注册请求...', 'info');
+            
+            $.ajax({
+                type: "POST",
+                url: "WebServ.asmx/RegisterUser",
+                data: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    displayName: displayName || null
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    
+                    if (result.success) {
+                        var message = `✅ 注册成功！\n\n`;
+                        message += `用户ID: ${result.userId}\n`;
+                        message += `显示名称: ${result.displayName}\n`;
+                        message += `\n现在可以使用登录测试来验证登录功能。`;
+                        showResult('registerResult', message, 'success');
+                    } else {
+                        showResult('registerResult', `❌ 注册失败：${result.message}`, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult('registerResult', `❌ 请求失败：${error}\n\n请确保 WebServ.asmx 服务正在运行。`, 'error');
+                }
+            });
+        }
+        
+        // 测试登录
+        function testLogin() {
+            var identifier = $('#loginIdentifier').val().trim();
+            var password = $('#loginPassword').val();
+            
+            if (!identifier || !password) {
+                showResult('loginResult', '请填写用户名和密码', 'error');
+                return;
+            }
+            
+            showResult('loginResult', '正在发送登录请求...', 'info');
+            
+            $.ajax({
+                type: "POST",
+                url: "WebServ.asmx/LoginUser",
+                data: JSON.stringify({
+                    identifier: identifier,
+                    password: password
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    
+                    if (result.success) {
+                        // 保存用户信息到 localStorage
+                        var userInfo = {
+                            id: result.userId,
+                            username: result.username,
+                            displayName: result.displayName,
+                            email: result.email,
+                            role: result.role
+                        };
+                        
+                        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                        
+                        var message = `✅ 登录成功！\n\n`;
+                        message += `用户ID: ${result.userId}\n`;
+                        message += `用户名: ${result.username}\n`;
+                        message += `显示名称: ${result.displayName}\n`;
+                        message += `邮箱: ${result.email}\n`;
+                        message += `角色: ${result.role}\n`;
+                        message += `\n用户信息已保存到 localStorage。\n`;
+                        message += `可以点击"检查本地存储"按钮验证。`;
+                        
+                        showResult('loginResult', message, 'success');
+                    } else {
+                        showResult('loginResult', `❌ 登录失败：${result.message}`, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult('loginResult', `❌ 请求失败：${error}\n\n请确保 WebServ.asmx 服务正在运行。`, 'error');
+                }
+            });
+        }
+        
+        // 检查本地存储
+        function checkLocalStorage() {
+            var userInfo = localStorage.getItem('userInfo');
+            
+            if (userInfo) {
+                try {
+                    var user = JSON.parse(userInfo);
+                    var message = `✅ 找到用户信息：\n\n`;
+                    message += `<div class="code-block">`;
+                    message += JSON.stringify(user, null, 2);
+                    message += `</div>`;
+                    showResult('storageResult', message, 'success');
+                } catch (e) {
+                    showResult('storageResult', `❌ 解析用户信息失败：${e.message}`, 'error');
+                }
+            } else {
+                showResult('storageResult', `⚠️ localStorage 中没有用户信息\n\n请先完成登录测试。`, 'info');
+            }
+        }
+        
+        // 跳转到主页面
+        function jumpToMainPage() {
+            var userInfo = localStorage.getItem('userInfo');
+            
+            if (!userInfo) {
+                alert('请先完成登录测试！');
+                return;
+            }
+            
+            window.location.href = 'WebForm1.aspx';
+        }
+        
+        // 测试 API 连通性
+        function testApiConnection() {
+            showResult('apiResult', '正在测试 API 连通性...', 'info');
+            
+            $.ajax({
+                type: "POST",
+                url: "WebServ.asmx/HelloWorld",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    showResult('apiResult', `✅ API 连通正常！\n\n响应：${response.d}`, 'success');
+                },
+                error: function(xhr, status, error) {
+                    showResult('apiResult', `❌ API 连接失败：${error}\n\n请确保：\n1. 项目正在运行\n2. WebServ.asmx 文件存在\n3. 路径正确`, 'error');
+                }
+            });
+        }
+        
+        // 显示结果
+        function showResult(elementId, message, type) {
+            var $result = $('#' + elementId);
+            $result.text('').removeClass('result-success result-error result-info');
+            
+            if (type === 'success') {
+                $result.addClass('result-success');
+            } else if (type === 'error') {
+                $result.addClass('result-error');
+            } else {
+                $result.addClass('result-info');
+            }
+            
+            $result.html(message.replace(/\n/g, '<br>')).show();
+        }
+        
+        // 页面加载时检查
+        $(document).ready(function() {
+            console.log('登录测试页面已加载');
+            
+            // 自动检查 localStorage
+            setTimeout(checkLocalStorage, 500);
+        });
+    </script>
+</body>
+</html>

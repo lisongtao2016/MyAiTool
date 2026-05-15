@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>测试 KindEditor 高度调整</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .test-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        iframe {
+            border: 2px solid #4ecdc4;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>测试 KindEditor 高度调整功能</h1>
+    
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-title">测试 1: 直接初始化 KindEditor (如 test_bottom_editor.html)</div>
+            <div class="test-description">这是原始的工作方式，KindEditor直接初始化在页面中，没有使用 iframe</div>
+            <div id="directEditor" style="width: 100%; height: 300px;"></div>
+            <div id="directResult" class="result">等待测试...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试 2: iframe 中的 KindEditor (如 WebForm1.aspx)</div>
+            <div class="test-description">这是 WebForm1.aspx 中的方式，KindEditor在独立的 iframe 中</div>
+            <iframe id="kindeditorIframe" src="kindeditor_iframe.html" style="width: 100%; height: 300px;"></iframe>
+            <div id="iframeResult" class="result">等待测试...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试 3: 实际验证</div>
+            <div class="test-description">验证高度调整功能是否正常工作</div>
+            <button onclick="testResize()">测试高度调整</button>
+            <div id="verificationResult" class="result">等待测试...</div>
+        </div>
+    </div>
+    
+    <!-- KindEditor 库 -->
+    <link rel="stylesheet" href="js/kindeditor-master/themes/default/default.css" />
+    <script charset="utf-8" src="js/kindeditor-master/kindeditor-all.js"></script>
+    <script charset="utf-8" src="js/kindeditor-master/lang/zh-CN.js"></script>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    
+    <script>
+        var directEditor = null;
+        var iframeEditor = null;
+        
+        // 初始化测试 1: 直接初始化
+        $(document).ready(function() {
+            console.log('开始初始化测试...');
+            
+            // 测试 1: 直接初始化 KindEditor
+            try {
+                directEditor = KindEditor.create('#directEditor', {
+                    allowFileManager: true,
+                    langType: 'zh-CN',
+                    width: '100%',
+                    height: '100%',
+                    resizeType: 2,
+                    minWidth: 100,
+                    minHeight: 100,
+                    afterCreate: function() {
+                        this.html('<p>这是直接初始化的 KindEditor 编辑器</p>');
+                        $('#directResult').html('✅ 直接初始化成功！可以拖动右下角调整高度。').addClass('success');
+                        console.log('直接初始化 KindEditor 成功');
+                    }
+                });
+            } catch (e) {
+                $('#directResult').html('❌ 直接初始化失败: ' + e.message).addClass('error');
+                console.error('直接初始化失败:', e);
+            }
+            
+            // 测试 2: iframe 中的 KindEditor
+            var iframe = document.getElementById('kindeditorIframe');
+            iframe.onload = function() {
+                console.log('iframe 加载完成');
+                
+                // 通过消息通信与 iframe 中的 KindEditor 交互
+                setTimeout(function() {
+                    iframe.contentWindow.postMessage({
+                        type: 'get_content'
+                    }, '*');
+                    
+                    $('#iframeResult').html('✅ iframe 中的 KindEditor 已加载，请尝试拖动右下角调整高度').addClass('success');
+                }, 1000);
+            };
+            
+            // 监听来自 iframe 的消息
+            window.addEventListener('message', function(event) {
+                console.log('收到消息:', event.data.type);
+                
+                if (event.data.type === 'kindeditor_content_response') {
+                    console.log('KindEditor 内容响应:', event.data.content);
+                }
+                
+                if (event.data.type === 'kindeditor_resized') {
+                    $('#verificationResult').html('✅ KindEditor 高度调整成功！iframe 中的 KindEditor 可以正常调整高度。').addClass('success');
+                }
+            });
+        });
+        
+        // 测试高度调整功能
+        function testResize() {
+            $('#verificationResult').html('测试中...请尝试拖动任一编辑器的右下角来调整高度');
+            
+            // 检查直接编辑器
+            if (directEditor) {
+                var container = directEditor.container;
+                if (container) {
+                    var style = window.getComputedStyle(container);
+                    var resizeElements = container.querySelectorAll('.ke-resize');
+                    
+                    console.log('直接编辑器容器:', container);
+                    console.log('容器样式:', style);
+                    console.log('调整大小元素:', resizeElements.length);
+                    
+                    if (resizeElements.length > 0) {
+                        $('#verificationResult').html($('#verificationResult').html() + '<br>✅ 直接编辑器有调整大小的元素');
+                    } else {
+                        $('#verificationResult').html($('#verificationResult').html() + '<br>⚠️ 直接编辑器没有找到调整大小的元素');
+                    }
+                }
+            }
+            
+            // 检查 iframe 中的编辑器
+            var iframe = document.getElementById('kindeditorIframe');
+            try {
+                iframe.contentWindow.postMessage({
+                    type: 'get_content'
+                }, '*');
+                
+                $('#verificationResult').html($('#verificationResult').html() + '<br>✅ 与 iframe 通信正常');
+            } catch (e) {
+                $('#verificationResult').html($('#verificationResult').html() + '<br>❌ 与 iframe 通信失败: ' + e.message).addClass('error');
+            }
+        }
+        
+        // 提供测试说明
+        $(document).ready(function() {
+            console.log('测试说明:');
+            console.log('1. 直接初始化的 KindEditor 应该可以调整高度');
+            console.log('2. iframe 中的 KindEditor 也应该可以调整高度');
+            console.log('3. 两个编辑器都应该有右下角的调整大小手柄');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册功能快速测试</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #4a6ee0 0%, #6a11cb 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .test-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4a6ee0;
+            box-shadow: 0 0 0 3px rgba(74, 110, 224, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4a6ee0 0%, #6a11cb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 110, 224, 0.2);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .quick-fill {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-fill h3 {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        
+        .quick-fill button {
+            background: #ffc107;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .quick-fill button:hover {
+            background: #ffb300;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <div class="test-header">
+            <h1>📝 注册功能快速测试</h1>
+            <p>一键填充测试数据，快速验证注册功能</p>
+        </div>
+        
+        <div class="test-body">
+            <!-- 快速填充 -->
+            <div class="quick-fill">
+                <h3>⚡ 快速填充测试数据：</h3>
+                <button onclick="fillTestData(1)">测试用户 1</button>
+                <button onclick="fillTestData(2)">测试用户 2</button>
+                <button onclick="fillTestData(3)">测试用户 3</button>
+                <button onclick="clearForm()" style="background: #6c757d; color: white;">清空表单</button>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div class="form-group">
+                <label for="username">用户名 *</label>
+                <input type="text" id="username" class="form-control" placeholder="输入用户名（3-20个字符）">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">邮箱地址 *</label>
+                <input type="email" id="email" class="form-control" placeholder="输入有效的邮箱地址">
+            </div>
+            
+            <div class="form-group">
+                <label for="displayName">显示名称（可选）</label>
+                <input type="text" id="displayName" class="form-control" placeholder="输入显示名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码 *</label>
+                <input type="password" id="password" class="form-control" placeholder="输入密码（至少6个字符）">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">确认密码 *</label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="再次输入密码">
+            </div>
+            
+            <button class="btn btn-primary" onclick="testRegister()">🚀 执行注册测试</button>
+            <button class="btn btn-secondary" onclick="openLoginPage()">🔗 打开完整登录页面</button>
+            
+            <div id="resultBox" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // 测试数据
+        const testData = {
+            1: {
+                username: 'testuser001',
+                email: 'test001@example.com',
+                displayName: '测试用户001',
+                password: 'Test@123456'
+            },
+            2: {
+                username: 'testuser002',
+                email: 'test002@example.com',
+                displayName: '测试用户002',
+                password: 'Test@123456'
+            },
+            3: {
+                username: 'testuser003',
+                email: 'test003@example.com',
+                displayName: '测试用户003',
+                password: 'Test@123456'
+            }
+        };
+        
+        // 填充测试数据
+        function fillTestData(id) {
+            const data = testData[id];
+            $('#username').val(data.username);
+            $('#email').val(data.email);
+            $('#displayName').val(data.displayName);
+            $('#password').val(data.password);
+            $('#confirmPassword').val(data.password);
+            showResult('已填充测试数据，点击"执行注册测试"按钮', 'info');
+        }
+        
+        // 清空表单
+        function clearForm() {
+            $('#username').val('');
+            $('#email').val('');
+            $('#displayName').val('');
+            $('#password').val('');
+            $('#confirmPassword').val('');
+            $('#resultBox').hide();
+        }
+        
+        // 执行注册测试
+        function testRegister() {
+            var username = $('#username').val().trim();
+            var email = $('#email').val().trim();
+            var displayName = $('#displayName').val().trim();
+            var password = $('#password').val();
+            var confirmPassword = $('#confirmPassword').val();
+            
+            // 前端验证
+            if (!username) {
+                showResult('❌ 请输入用户名', 'error');
+                return;
+            }
+            
+            if (username.length < 3 || username.length > 20) {
+                showResult('❌ 用户名长度应为3-20个字符', 'error');
+                return;
+            }
+            
+            if (!email) {
+                showResult('❌ 请输入邮箱地址', 'error');
+                return;
+            }
+            
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showResult('❌ 请输入有效的邮箱地址', 'error');
+                return;
+            }
+            
+            if (!password) {
+                showResult('❌ 请输入密码', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showResult('❌ 密码至少需要6个字符', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showResult('❌ 两次输入的密码不一致', 'error');
+                return;
+            }
+            
+            showResult('⏳ 正在发送注册请求...', 'info');
+            
+            // 调用注册 API
+            $.ajax({
+                type: "POST",
+                url: "WebServ.asmx/RegisterUser",
+                data: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    displayName: displayName || null
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    
+                    if (result.success) {
+                        var message = `✅ 注册成功！\n\n`;
+                        message += `用户ID: ${result.userId}\n`;
+                        message += `显示名称: ${result.displayName}\n`;
+                        message += `\n现在可以：\n`;
+                        message += `1. 点击"打开完整登录页面"测试登录\n`;
+                        message += `2. 或直接访问 WebForm1.aspx`;
+                        
+                        showResult(message, 'success');
+                        
+                        // 自动填充登录信息
+                        localStorage.setItem('lastRegisteredUser', JSON.stringify({
+                            username: username,
+                            password: password
+                        }));
+                    } else {
+                        showResult(`❌ 注册失败：${result.message}`, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showResult(`❌ 请求失败：${error}\n\n请确保项目正在运行。`, 'error');
+                }
+            });
+        }
+        
+        // 打开完整登录页面
+        function openLoginPage() {
+            window.open('login.html', '_blank');
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            var $result = $('#resultBox');
+            $result.removeClass('result-success result-error result-info');
+            
+            if (type === 'success') {
+                $result.addClass('result-success');
+            } else if (type === 'error') {
+                $result.addClass('result-error');
+            } else {
+                $result.addClass('result-info');
+            }
+            
+            $result.html(message.replace(/\n/g, '<br>')).show();
+        }
+        
+        // 页面加载时检查
+        $(document).ready(function() {
+            console.log('注册测试页面已加载');
+            
+            // 如果有上次注册的用户，提示可以测试登录
+            var lastUser = localStorage.getItem('lastRegisteredUser');
+            if (lastUser) {
+                try {
+                    var user = JSON.parse(lastUser);
+                    showResult(`💡 提示：上次注册的用户是 "${user.username}"，可以点击"打开完整登录页面"测试登录`, 'info');
+                } catch (e) {
+                    // 忽略解析错误
+                }
+            }
+        });
+    </script>
+</body>
+</html>

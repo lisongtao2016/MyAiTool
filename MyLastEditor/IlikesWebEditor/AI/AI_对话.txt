@@ -1,0 +1,19 @@
+﻿我要对 【D:\CODEUP\Personal_AI_TOOLS_DEV\MyLastEditor\IlikesWebEditor参照用】 进行重构
+重构后 放在【D:\CODEUP\Personal_AI_TOOLS_DEV\MyLastEditor\MyWebEditor】
+
+第一步我要重构登录画面，请帮我写一个步骤文档 
+
+帮我创建一个AI规则文档， 内容必须简单一动
+
+不超过200字
+
+
+
+每个web页面 对应的 js文件和css文件都和页面同名
+
+
+我哪句话 让你帮我建立代码画面了
+我只是要步骤文档啊，为什么帮我创建了文件
+
+我要从表定义书开始改，所以先给我创建用户表的表定义书，
+要求简洁（我没空儿看那么多无效的文字）

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Debug KindEditor Height</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #007bff;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+        }
+        
+        .editor-wrapper {
+            flex: 1;
+            min-height: 0;
+            border: 2px solid #28a745;
+            position: relative;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .debug-info h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .debug-item {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px dashed #dee2e6;
+        }
+        
+        .debug-label {
+            font-weight: bold;
+            color: #007bff;
+            display: inline-block;
+            width: 150px;
+        }
+    </style>
+    <!-- KindEditor -->
+    <link rel="stylesheet" href="js/kindeditor-master/themes/default/default.css" />
+    <script charset="utf-8" src="js/kindeditor-master/kindeditor-all.js"></script>
+    <script charset="utf-8" src="js/kindeditor-master/lang/zh-CN.js"></script>
+</head>
+<body>
+    <h1>KindEditor 高度调试</h1>
+    
+    <div class="container">
+        <div class="header">编辑器容器 (600px 高度)</div>
+        <div class="editor-wrapper" id="editorWrapper">
+            <textarea id="kindEditor" style="visibility: hidden;"></textarea>
+        </div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>调试信息</h3>
+        <div id="debugOutput">
+            正在初始化...
+        </div>
+    </div>
+    
+    <script>
+        var debugOutput = document.getElementById('debugOutput');
+        var editorWrapper = document.getElementById('editorWrapper');
+        
+        function logDebug(message) {
+            var item = document.createElement('div');
+            item.className = 'debug-item';
+            item.innerHTML = '<span class="debug-label">' + new Date().toLocaleTimeString() + ':</span> ' + message;
+            debugOutput.appendChild(item);
+        }
+        
+        function measureElements() {
+            logDebug('=== 开始测量元素尺寸 ===');
+            
+            // 测量容器
+            logDebug('编辑器容器: ' + editorWrapper.offsetHeight + 'px');
+            
+            // 查找KindEditor生成的元素
+            var keContainer = document.querySelector('.ke-container');
+            if (keContainer) {
+                logDebug('ke-container: ' + keContainer.offsetHeight + 'px');
+                
+                var keEdit = document.querySelector('.ke-edit');
+                if (keEdit) {
+                    logDebug('ke-edit: ' + keEdit.offsetHeight + 'px');
+                    logDebug('ke-edit style.height: ' + keEdit.style.height);
+                }
+                
+                var keIframe = document.querySelector('.ke-edit-iframe');
+                if (keIframe) {
+                    logDebug('ke-edit-iframe: ' + keIframe.offsetHeight + 'px');
+                    logDebug('ke-edit-iframe style.height: ' + keIframe.style.height);
+                }
+            }
+            
+            logDebug('=== 测量完成 ===');
+        }
+        
+        // 初始化KindEditor
+        logDebug('开始初始化KindEditor...');
+        
+        var editor = KindEditor.create('#kindEditor', {
+            allowFileManager: true,
+            langType: 'zh-CN',
+            width: '100%',
+            height: '100%',
+            resizeType: 2,
+            afterCreate: function() {
+                logDebug('KindEditor afterCreate 回调执行');
+                
+                // 检查容器
+                if (this.container) {
+                    logDebug('this.container 存在');
+                    logDebug('this.container.style.height: ' + this.container.style.height);
+                    
+                    // 设置容器高度
+                    this.container.style.height = '100%';
+                    this.container.style.minHeight = '0';
+                }
+                
+                // 检查编辑区域
+                if (this.edit && this.edit.container) {
+                    logDebug('this.edit.container 存在');
+                    logDebug('this.edit.container.style.height: ' + this.edit.container.style.height);
+                    
+                    // 设置编辑区域高度
+                    this.edit.container.style.height = '100%';
+                    this.edit.container.style.minHeight = '0';
+                }
+                
+                // 延迟测量，确保DOM已更新
+                setTimeout(measureElements, 100);
+            }
+        });
+        
+        // 定期测量
+        setInterval(measureElements, 2000);
+        
+        logDebug('KindEditor 初始化调用完成');
+    </script>
+</body>
+</html>

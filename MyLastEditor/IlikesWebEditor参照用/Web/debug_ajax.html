@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>调试 AJAX 请求</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        button { background: #4ecdc4; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #3dbab1; }
+        .output { background: #2d2d2d; color: #fff; padding: 15px; border-radius: 5px; margin-top: 10px; font-family: 'Courier New', monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .error { background: #ff6b6b; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .success { background: #4ecdc4; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>调试 AJAX 请求</h1>
+        
+        <div class="section">
+            <h2>测试 1: 测试 GetAllContents</h2>
+            <button onclick="testGetAllContents()">测试 GetAllContents</button>
+            <div id="result1" class="output">等待测试...</div>
+        </div>
+        
+        <div class="section">
+            <h2>测试 2: 测试 SearchContents</h2>
+            <input type="text" id="searchText" placeholder="输入搜索关键词" value="test">
+            <button onclick="testSearchContents()">测试 SearchContents</button>
+            <div id="result2" class="output">等待测试...</div>
+        </div>
+        
+        <div class="section">
+            <h2>测试 3: 测试 GetContentById</h2>
+            <input type="text" id="contentId" placeholder="输入内容ID" value="1">
+            <button onclick="testGetContentById()">测试 GetContentById</button>
+            <div id="result3" class="output">等待测试...</div>
+        </div>
+        
+        <div class="section">
+            <h2>测试 4: 查看所有数据库内容</h2>
+            <button onclick="viewAllDatabase()">查看所有数据库内容</button>
+            <div id="result4" class="output">等待测试...</div>
+        </div>
+    </div>
+    
+    <script>
+        function logOutput(elementId, message, type) {
+            var timestamp = new Date().toLocaleTimeString();
+            var outputElement = document.getElementById(elementId);
+            var logMessage = `[${timestamp}] ${message}\n`;
+            
+            if (type === 'error') {
+                logMessage = `❌ ${logMessage}`;
+            } else if (type === 'success') {
+                logMessage = `✅ ${logMessage}`;
+            }
+            
+            outputElement.textContent += logMessage;
+            outputElement.scrollTop = outputElement.scrollHeight;
+        }
+        
+        function clearOutput(elementId) {
+            document.getElementById(elementId).textContent = '';
+        }
+        
+        function testGetAllContents() {
+            clearOutput('result1');
+            logOutput('result1', '开始测试 GetAllContents...');
+            
+            $.ajax({
+                type: "POST",
+                url: "WebForm1.aspx/GetAllContents",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    logOutput('result1', '=== 原始响应 ===', 'success');
+                    logOutput('result1', JSON.stringify(response, null, 2));
+                    
+                    logOutput('result1', '\n=== 处理 d 属性 ===', 'success');
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    logOutput('result1', JSON.stringify(result, null, 2));
+                    
+                    if (result.success) {
+                        logOutput('result1', '\n✅ 请求成功！', 'success');
+                        logOutput('result1', `找到 ${result.contents ? result.contents.length : 0} 条内容`);
+                        
+                        if (result.contents && result.contents.length > 0) {
+                            logOutput('result1', '\n=== 第一条内容详情 ===');
+                            var firstContent = result.contents[0];
+                            logOutput('result1', JSON.stringify(firstContent, null, 2));
+                            
+                            logOutput('result1', '\n=== 第一条内容字段名 ===');
+                            logOutput('result1', Object.keys(firstContent).join(', '));
+                            
+                            logOutput('result1', '\n=== 提取的字段值 ===');
+                            logOutput('result1', '标题: ' + (firstContent.title || firstContent.Title || '空'));
+                            logOutput('result1', '作者: ' + (firstContent.author || firstContent.Author || '空'));
+                            logOutput('result1', '语言: ' + (firstContent.language || firstContent.Language || '空'));
+                            logOutput('result1', '日期: ' + (firstContent.createdDate || firstContent.CreatedDate || '空'));
+                        }
+                    } else {
+                        logOutput('result1', '❌ 请求失败: ' + result.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    logOutput('result1', '❌ AJAX 错误: ' + error, 'error');
+                    logOutput('result1', '状态: ' + status);
+                    logOutput('result1', '状态码: ' + xhr.status);
+                    logOutput('result1', '响应文本: ' + xhr.responseText);
+                }
+            });
+        }
+        
+        function testSearchContents() {
+            clearOutput('result2');
+            var searchText = document.getElementById('searchText').value;
+            logOutput('result2', `开始搜索: "${searchText}"...`);
+            
+            $.ajax({
+                type: "POST",
+                url: "WebForm1.aspx/SearchContents",
+                data: JSON.stringify({ searchText: searchText }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    logOutput('result2', '=== 原始响应 ===', 'success');
+                    logOutput('result2', JSON.stringify(response, null, 2));
+                    
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    if (result.success) {
+                        logOutput('result2', `✅ 搜索成功！找到 ${result.contents ? result.contents.length : 0} 条结果`, 'success');
+                    } else {
+                        logOutput('result2', '❌ 搜索失败: ' + result.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    logOutput('result2', '❌ AJAX 错误: ' + error, 'error');
+                }
+            });
+        }
+        
+        function testGetContentById() {
+            clearOutput('result3');
+            var contentId = document.getElementById('contentId').value;
+            logOutput('result3', `获取内容 ID: ${contentId}...`);
+            
+            $.ajax({
+                type: "POST",
+                url: "WebForm1.aspx/GetContentById",
+                data: JSON.stringify({ id: contentId }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    logOutput('result3', '=== 原始响应 ===', 'success');
+                    logOutput('result3', JSON.stringify(response, null, 2));
+                    
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    if (result.success) {
+                        logOutput('result3', '✅ 获取内容成功！', 'success');
+                        logOutput('result3', JSON.stringify(result.content, null, 2));
+                    } else {
+                        logOutput('result3', '❌ 获取内容失败: ' + result.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    logOutput('result3', '❌ AJAX 错误: ' + error, 'error');
+                }
+            });
+        }
+        
+        function viewAllDatabase() {
+            clearOutput('result4');
+            logOutput('result4', '查询数据库内容...');
+            
+            // 通过 AJAX 调用一个自定义端点来获取原始数据库数据
+            $.ajax({
+                type: "POST",
+                url: "WebForm1.aspx/GetAllContents",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    if (result.success && result.contents) {
+                        logOutput('result4', '=== 所有内容 ===', 'success');
+                        result.contents.forEach(function(content, index) {
+                            logOutput('result4', `\n[${index + 1}] ID: ${content.id}`);
+                            logOutput('result4', `   标题: ${content.title || '空'}`);
+                            logOutput('result4', `   副标题: ${content.subtitle || '空'}`);
+                            logOutput('result4', `   作者: ${content.author || '空'}`);
+                            logOutput('result4', `   语言: ${content.language || '空'}`);
+                            logOutput('result4', `   日期: ${content.createdDate || '空'}`);
+                            logOutput('result4', `   热门标签: ${content.hotTags || '空'}`);
+                        });
+                    } else {
+                        logOutput('result4', '❌ 获取数据失败', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    logOutput('result4', '❌ AJAX 错误: ' + error, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

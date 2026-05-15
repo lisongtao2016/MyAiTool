@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>日程表 API 测试页面</title>
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #357abd;
+        }
+        .btn-success {
+            background: #40c057;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #2f9e44;
+        }
+        .btn-danger {
+            background: #fa5252;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e03131;
+        }
+        .btn-info {
+            background: #22b8cf;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #1c9cb0;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #4a90e2;
+        }
+        .result {
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #4a90e2;
+            color: white;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+        }
+        .status-error {
+            background: #ffe3e3;
+            color: #c92a2a;
+        }
+    </style>
+</head>
+<body>
+    <h1>📅 日程表 API 测试页面</h1>
+    
+    <!-- 获取所有任务 -->
+    <div class="section">
+        <h2>1. 获取所有任务 (GET /api/tasks)</h2>
+        <button class="btn-primary" onclick="getAllTasks()">获取任务列表</button>
+        <div class="result">
+            <pre id="all-tasks-result">点击按钮获取数据...</pre>
+        </div>
+    </div>
+
+    <!-- 搜索任务 -->
+    <div class="section">
+        <h2>2. 搜索任务 (GET /api/tasks/search)</h2>
+        <div class="form-group">
+            <label>负责人:</label>
+            <input type="text" id="search-owner" placeholder="输入负责人姓名" value="张三">
+        </div>
+        <button class="btn-info" onclick="searchTasks()">搜索任务</button>
+        <div class="result">
+            <pre id="search-result">点击按钮搜索...</pre>
+        </div>
+    </div>
+
+    <!-- 创建任务 -->
+    <div class="section">
+        <h2>3. 创建任务 (POST /api/tasks)</h2>
+        <div class="form-group">
+            <label>项目分组:</label>
+            <input type="text" id="create-group" value="核心A项目">
+        </div>
+        <div class="form-group">
+            <label>子模块:</label>
+            <input type="text" id="create-subgroup" value="模块5">
+        </div>
+        <div class="form-group">
+            <label>任务名称:</label>
+            <input type="text" id="create-name" value="新测试任务">
+        </div>
+        <div class="form-group">
+            <label>开始日期:</label>
+            <input type="date" id="create-startdate" value="2026-04-10">
+        </div>
+        <div class="form-group">
+            <label>结束日期:</label>
+            <input type="date" id="create-enddate" value="2026-04-20">
+        </div>
+        <div class="form-group">
+            <label>负责人:</label>
+            <input type="text" id="create-owner" value="测试员">
+        </div>
+        <div class="form-group">
+            <label>计划进度:</label>
+            <input type="number" id="create-plan" value="100" min="0" max="100">
+        </div>
+        <div class="form-group">
+            <label>实际进度:</label>
+            <input type="number" id="create-actual" value="0" min="0" max="100">
+        </div>
+        <button class="btn-success" onclick="createTask()">创建任务</button>
+        <div class="result">
+            <pre id="create-result">填写表单后点击创建...</pre>
+        </div>
+    </div>
+
+    <!-- 更新任务 -->
+    <div class="section">
+        <h2>4. 更新任务 (PUT /api/tasks/:id)</h2>
+        <div class="form-group">
+            <label>任务ID:</label>
+            <input type="number" id="update-id" value="1">
+        </div>
+        <div class="form-group">
+            <label>新负责人:</label>
+            <input type="text" id="update-owner" value="李四">
+        </div>
+        <div class="form-group">
+            <label>新进度:</label>
+            <input type="number" id="update-actual" value="50" min="0" max="100">
+        </div>
+        <button class="btn-primary" onclick="updateTask()">更新任务</button>
+        <div class="result">
+            <pre id="update-result">填写信息后点击更新...</pre>
+        </div>
+    </div>
+
+    <!-- 删除任务 -->
+    <div class="section">
+        <h2>5. 删除任务 (DELETE /api/tasks/:id)</h2>
+        <div class="form-group">
+            <label>任务ID:</label>
+            <input type="number" id="delete-id" value="11">
+        </div>
+        <button class="btn-danger" onclick="deleteTask()">删除任务</button>
+        <div class="result">
+            <pre id="delete-result">输入ID后点击删除...</pre>
+        </div>
+    </div>
+
+    <!-- 任务列表表格 -->
+    <div class="section">
+        <h2>📊 当前任务列表</h2>
+        <button class="btn-primary" onclick="loadTaskTable()">刷新表格</button>
+        <table id="task-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>分组</th>
+                    <th>子模块</th>
+                    <th>任务名</th>
+                    <th>开始日期</th>
+                    <th>结束日期</th>
+                    <th>负责人</th>
+                    <th>计划%</th>
+                    <th>实际%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="9" style="text-align: center;">点击"刷新表格"加载数据</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script defer>
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // 显示结果辅助函数
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            const statusClass = isError ? 'status-error' : 'status-success';
+            const statusText = isError ? '❌ 失败' : '✅ 成功';
+            
+            if (typeof data === 'object') {
+                element.innerHTML = `<span class="status ${statusClass}">${statusText}</span>\n\n` + 
+                                   JSON.stringify(data, null, 2);
+            } else {
+                element.innerHTML = `<span class="status ${statusClass}">${statusText}</span>\n\n` + data;
+            }
+        }
+
+        // 1. 获取所有任务
+        async function getAllTasks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`);
+                const data = await response.json();
+                showResult('all-tasks-result', data);
+            } catch (error) {
+                showResult('all-tasks-result', error.message, true);
+            }
+        }
+
+        // 2. 搜索任务
+        async function searchTasks() {
+            const owner = document.getElementById('search-owner').value;
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/search?owner=${encodeURIComponent(owner)}`);
+                const data = await response.json();
+                showResult('search-result', data);
+            } catch (error) {
+                showResult('search-result', error.message, true);
+            }
+        }
+
+        // 3. 创建任务
+        async function createTask() {
+            const taskData = {
+                group: document.getElementById('create-group').value,
+                subGroup: document.getElementById('create-subgroup').value,
+                name: document.getElementById('create-name').value,
+                startDate: document.getElementById('create-startdate').value,
+                endDate: document.getElementById('create-enddate').value,
+                owner: document.getElementById('create-owner').value,
+                plan: parseInt(document.getElementById('create-plan').value),
+                actual: parseInt(document.getElementById('create-actual').value),
+                startDay: 0,
+                duration: 10
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                const data = await response.json();
+                showResult('create-result', data, !response.ok);
+                
+                // 自动刷新表格
+                if (response.ok) {
+                    loadTaskTable();
+                }
+            } catch (error) {
+                showResult('create-result', error.message, true);
+            }
+        }
+
+        // 4. 更新任务
+        async function updateTask() {
+            const id = document.getElementById('update-id').value;
+            const updateData = {
+                owner: document.getElementById('update-owner').value,
+                actual: parseInt(document.getElementById('update-actual').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                const data = await response.json();
+                showResult('update-result', data, !response.ok);
+                
+                // 自动刷新表格
+                if (response.ok) {
+                    loadTaskTable();
+                }
+            } catch (error) {
+                showResult('update-result', error.message, true);
+            }
+        }
+
+        // 5. 删除任务
+        async function deleteTask() {
+            const id = document.getElementById('delete-id').value;
+            
+            if (!confirm(`确定要删除任务 ID: ${id} 吗？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                showResult('delete-result', data, !response.ok);
+                
+                // 自动刷新表格
+                if (response.ok) {
+                    loadTaskTable();
+                }
+            } catch (error) {
+                showResult('delete-result', error.message, true);
+            }
+        }
+
+        // 加载任务表格
+        async function loadTaskTable() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`);
+                const tasks = await response.json();
+                
+                const tbody = document.querySelector('#task-table tbody');
+                
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">暂无任务数据</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = tasks.map(task => `
+                    <tr>
+                        <td>${task.id}</td>
+                        <td>${task.group}</td>
+                        <td>${task.subGroup}</td>
+                        <td>${task.name}</td>
+                        <td>${task.startDate}</td>
+                        <td>${task.endDate}</td>
+                        <td>${task.owner}</td>
+                        <td>${task.plan}%</td>
+                        <td>${task.actual}%</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('加载任务列表失败:', error);
+            }
+        }
+
+        // 页面加载时自动获取一次数据
+        window.addEventListener('DOMContentLoaded', () => {
+            getAllTasks();
+        });
+    </script>
+</body>
+</html>

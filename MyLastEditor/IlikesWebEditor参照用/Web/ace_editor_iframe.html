@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ACE 编辑器独立页面</title>
+    <!-- ACE 编辑器 -->
+    <script src="js/JsAce/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/JsAce/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/JsAce/ext-modelist.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jquery-4.0.0.min.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #aceEditorContainer {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+        }
+        
+        #editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="aceEditorContainer">
+        <pre id="editor" class="ace_editor"></pre>
+    </div>
+    
+    <script>
+        // 全局变量，用于与父页面通信
+        window.aceEditorInstance = null;
+        window.currentLanguageMode = null;
+        window.parentPage = window.parent;
+        
+        // 初始化 ACE 编辑器
+        function initAceEditor() {
+            console.log('ACE iframe: 开始初始化...');
+            
+            // 创建 ACE 编辑器实例
+            window.aceEditorInstance = ace.edit("editor");
+            window.aceEditorInstance.setOptions({
+                enableBasicAutocompletion: true,
+                fontSize: "15px",
+                theme: "ace/theme/chrome",
+                showPrintMargin: false,
+                showGutter: true,
+                highlightActiveLine: true,
+                wrap: true
+            });
+            
+            // 监听内容变化
+            window.aceEditorInstance.session.on('change', function() {
+                if (window.parentPage) {
+                    try {
+                        var content = window.aceEditorInstance.getValue();
+                        window.parentPage.postMessage({
+                            type: 'ace_content_changed',
+                            content: content
+                        }, '*');
+                    } catch (e) {
+                        console.warn('发送内容变化通知失败:', e);
+                    }
+                }
+            });
+            
+            console.log('ACE iframe: 编辑器初始化完成');
+            
+            // 通知父页面编辑器已就绪
+            if (window.parentPage) {
+                try {
+                    window.parentPage.postMessage({
+                        type: 'ace_editor_ready',
+                        source: 'ace_editor_iframe'
+                    }, '*');
+                } catch (e) {
+                    console.warn('通知父页面失败:', e);
+                }
+            }
+        }
+        
+        // 设置语言模式
+        function setLanguageMode(mode) {
+            if (!window.aceEditorInstance) return;
+            
+            if (mode && mode !== 'kindeditor') {
+                window.aceEditorInstance.session.setMode(mode);
+                window.currentLanguageMode = mode;
+                console.log('ACE iframe: 语言模式设置为', mode);
+            }
+        }
+        
+        // 监听父页面消息
+        window.addEventListener('message', function(event) {
+            var data = event.data;
+            
+            if (!data || !data.type) return;
+            
+            console.log('ACE iframe: 收到消息', data.type);
+            
+            switch (data.type) {
+                case 'set_content':
+                    if (window.aceEditorInstance) {
+                        window.aceEditorInstance.setValue(data.content || '', -1);
+                        console.log('ACE iframe: 内容已设置');
+                    }
+                    break;
+                    
+                case 'get_content':
+                    if (window.parentPage && window.aceEditorInstance) {
+                        var content = window.aceEditorInstance.getValue();
+                        window.parentPage.postMessage({
+                            type: 'ace_content_response',
+                            content: content
+                        }, '*');
+                        console.log('ACE iframe: 内容已发送');
+                    }
+                    break;
+                    
+                case 'sync_to_ace':
+                    if (window.aceEditorInstance && data.content !== undefined) {
+                        window.aceEditorInstance.setValue(data.content, -1);
+                        console.log('ACE iframe: 已同步内容');
+                    }
+                    break;
+                    
+                case 'set_language_mode':
+                    setLanguageMode(data.mode);
+                    break;
+                    
+                case 'show_editor':
+                    document.getElementById('aceEditorContainer').style.display = 'block';
+                    console.log('ACE iframe: 显示编辑器');
+                    break;
+                    
+                case 'hide_editor':
+                    document.getElementById('aceEditorContainer').style.display = 'none';
+                    console.log('ACE iframe: 隐藏编辑器');
+                    break;
+            }
+        });
+        
+        // 文档加载完成后初始化
+        $(document).ready(function() {
+            console.log('ACE iframe: 文档加载完成');
+            initAceEditor();
+        });
+        
+        // 向父页面报告 iframe 已加载
+        window.addEventListener('load', function() {
+            console.log('ACE iframe: 页面加载完成');
+            if (window.parentPage) {
+                try {
+                    window.parentPage.postMessage({
+                        type: 'iframe_loaded',
+                        source: 'ace_editor_iframe'
+                    }, '*');
+                } catch (e) {
+                    console.warn('发送加载完成通知失败:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

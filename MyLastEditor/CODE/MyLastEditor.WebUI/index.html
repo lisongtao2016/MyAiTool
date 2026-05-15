@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyLastEditor - 现代化的文本编辑器</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部工具栏 -->
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <button class="toolbar-btn" id="btn-new" title="新建文件 (Ctrl+N)">
+                    <i class="fas fa-file"></i>
+                    <span>新建</span>
+                </button>
+                <button class="toolbar-btn" id="btn-open" title="打开文件 (Ctrl+O)">
+                    <i class="fas fa-folder-open"></i>
+                    <span>打开</span>
+                </button>
+                <button class="toolbar-btn" id="btn-save" title="保存文件 (Ctrl+S)">
+                    <i class="fas fa-save"></i>
+                    <span>保存</span>
+                </button>
+                <button class="toolbar-btn" id="btn-save-as" title="另存为 (Ctrl+Shift+S)">
+                    <i class="fas fa-save"></i>
+                    <span>另存为</span>
+                </button>
+                <div class="separator"></div>
+                <button class="toolbar-btn" id="btn-undo" title="撤销 (Ctrl+Z)">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-redo" title="重做 (Ctrl+Y)">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <div class="separator"></div>
+                <button class="toolbar-btn" id="btn-cut" title="剪切 (Ctrl+X)">
+                    <i class="fas fa-cut"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-copy" title="复制 (Ctrl+C)">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-paste" title="粘贴 (Ctrl+V)">
+                    <i class="fas fa-paste"></i>
+                </button>
+            </div>
+            <div class="toolbar-center">
+                <div class="file-info" id="file-info">
+                    <span class="file-name">未命名文件</span>
+                    <span class="file-status" id="file-status">未保存</span>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn" id="btn-zoom-in" title="放大 (Ctrl+=)">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-zoom-out" title="缩小 (Ctrl+-)">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-zoom-reset" title="重置缩放 (Ctrl+0)">
+                    <i class="fas fa-search"></i>
+                </button>
+                <div class="separator"></div>
+                <button class="toolbar-btn" id="btn-theme" title="切换主题">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="toolbar-btn" id="btn-settings" title="设置">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-folder"></i> 文件资源管理器</h3>
+                <button class="sidebar-btn" id="btn-refresh-files" title="刷新">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="file-tree" id="file-tree">
+                <div class="file-tree-empty">
+                    <i class="fas fa-folder-open"></i>
+                    <p>打开文件夹以浏览文件</p>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="recent-files">
+                    <h4><i class="fas fa-history"></i> 最近打开</h4>
+                    <ul id="recent-files-list">
+                        <li class="recent-file-empty">暂无最近打开的文件</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主编辑区域 -->
+        <main class="editor-container">
+            <!-- 标签栏 -->
+            <div class="tab-bar" id="tab-bar">
+                <div class="tab active" data-tab="untitled">
+                    <span class="tab-title">未命名文件</span>
+                    <button class="tab-close" data-tab="untitled">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <button class="tab-add" id="btn-add-tab" title="新建标签页">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- 编辑器区域 -->
+            <div class="editor-wrapper">
+                <div class="editor-placeholder" id="editor-placeholder">
+                    <div class="placeholder-content">
+                        <i class="fas fa-code"></i>
+                        <h2>欢迎使用 MyLastEditor</h2>
+                        <p>开始编辑您的第一个文件</p>
+                        <div class="placeholder-actions">
+                            <button class="action-btn" id="btn-quick-new">
+                                <i class="fas fa-file"></i> 新建文件
+                            </button>
+                            <button class="action-btn" id="btn-quick-open">
+                                <i class="fas fa-folder-open"></i> 打开文件
+                            </button>
+                            <button class="action-btn" id="btn-quick-open-folder">
+                                <i class="fas fa-folder"></i> 打开文件夹
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="editor-area" id="editor-area" style="display: none;">
+                    <textarea id="simple-editor" class="simple-editor" placeholder="开始输入..."></textarea>
+                </div>
+            </div>
+
+            <!-- 状态栏 -->
+            <footer class="status-bar">
+                <div class="status-left">
+                    <span class="status-item" id="status-language">纯文本</span>
+                    <span class="status-item" id="status-encoding">UTF-8</span>
+                    <span class="status-item" id="status-line-ending">LF</span>
+                </div>
+                <div class="status-center">
+                    <span class="status-item" id="status-cursor">第1行, 第1列</span>
+                </div>
+                <div class="status-right">
+                    <span class="status-item" id="status-zoom">100%</span>
+                    <span class="status-item" id="status-modified">
+                        <i class="fas fa-circle" style="color: #ff6b6b;"></i> 已修改
+                    </span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- 模态框容器 -->
+    <div class="modal-overlay" id="modal-overlay" style="display: none;">
+        <div class="modal" id="settings-modal">
+            <div class="modal-header">
+                <h3>设置</h3>
+                <button class="modal-close" id="btn-close-settings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="settings-section">
+                    <h4><i class="fas fa-paint-brush"></i> 外观</h4>
+                    <div class="setting-item">
+                        <label for="theme-select">主题:</label>
+                        <select id="theme-select">
+                            <option value="light">浅色主题</option>
+                            <option value="dark" selected>深色主题</option>
+                            <option value="high-contrast">高对比度</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="font-size">字体大小:</label>
+                        <input type="range" id="font-size" min="10" max="24" value="14">
+                        <span id="font-size-value">14px</span>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4><i class="fas fa-cog"></i> 编辑器</h4>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-save" checked>
+                            自动保存
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="word-wrap" checked>
+                            自动换行
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="line-numbers" checked>
+                            显示行号
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-settings">取消</button>
+                <button class="btn-primary" id="btn-save-settings">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>

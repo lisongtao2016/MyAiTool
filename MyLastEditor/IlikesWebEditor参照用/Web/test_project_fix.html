@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试项目修复</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button.error {
+            background-color: #f44336;
+        }
+        .button.error:hover {
+            background-color: #d32f2f;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .loading {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>测试项目修复</h1>
+        <p>这个页面测试 GetAllProjects Web 服务方法是否正常工作。</p>
+        
+        <div>
+            <button class="button" id="btnTestGetAllProjects">测试 GetAllProjects</button>
+            <button class="button" id="btnTestCreateProject">测试 CreateProject</button>
+            <button class="button error" id="btnClearResults">清除结果</button>
+        </div>
+        
+        <div id="result" class="result">
+            点击按钮开始测试...
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e8; border-radius: 4px;">
+            <h3>测试说明：</h3>
+            <p>1. <strong>GetAllProjects</strong>: 测试获取所有项目列表</p>
+            <p>2. <strong>CreateProject</strong>: 测试创建新项目（需要输入项目名称）</p>
+            <p>3. 查看控制台 (F12) 获取详细日志信息</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            console.log('测试页面加载完成');
+            
+            // 测试 GetAllProjects
+            $('#btnTestGetAllProjects').click(function() {
+                console.log('开始测试 GetAllProjects...');
+                $('#result').html('<span class="loading">正在发送请求...</span>');
+                
+                $.ajax({
+                    type: "POST",
+                    url: "WebServ.asmx/GetAllProjects",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(response) {
+                        console.log('GetAllProjects 响应:', response);
+                        var result = response.d ? JSON.parse(response.d) : response;
+                        
+                        if (result.success) {
+                            var html = '<span class="success">✓ 请求成功！</span><br><br>';
+                            html += '<strong>项目数量:</strong> ' + (result.projects ? result.projects.length : 0) + '<br><br>';
+                            
+                            if (result.projects && result.projects.length > 0) {
+                                html += '<strong>项目列表:</strong><br>';
+                                result.projects.forEach(function(project, index) {
+                                    html += (index + 1) + '. ' + project.name;
+                                    if (project.description) {
+                                        html += ' - ' + project.description;
+                                    }
+                                    html += ' (ID: ' + project.id + ')<br>';
+                                });
+                            } else {
+                                html += '<em>没有找到项目，数据库可能是空的。</em>';
+                            }
+                            
+                            $('#result').html(html);
+                        } else {
+                            $('#result').html('<span class="error">✗ 请求失败: ' + result.message + '</span>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('GetAllProjects 错误:', error, xhr);
+                        $('#result').html('<span class="error">✗ AJAX 错误: ' + error + '</span><br><br>');
+                        $('#result').append('<strong>状态:</strong> ' + status + '<br>');
+                        $('#result').append('<strong>响应文本:</strong> ' + xhr.responseText);
+                    }
+                });
+            });
+            
+            // 测试 CreateProject
+            $('#btnTestCreateProject').click(function() {
+                var projectName = prompt('请输入项目名称:', '测试项目 ' + new Date().toLocaleTimeString());
+                if (!projectName || projectName.trim() === '') {
+                    alert('项目名称不能为空');
+                    return;
+                }
+                
+                var projectDescription = prompt('请输入项目描述（可选）:', '这是一个测试项目');
+                
+                console.log('开始测试 CreateProject...', projectName, projectDescription);
+                $('#result').html('<span class="loading">正在创建项目...</span>');
+                
+                $.ajax({
+                    type: "POST",
+                    url: "WebServ.asmx/CreateProject",
+                    data: JSON.stringify({
+                        name: projectName.trim(),
+                        description: projectDescription ? projectDescription.trim() : ''
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(response) {
+                        console.log('CreateProject 响应:', response);
+                        var result = response.d ? JSON.parse(response.d) : response;
+                        
+                        if (result.success) {
+                            var html = '<span class="success">✓ 项目创建成功！</span><br><br>';
+                            html += '<strong>项目ID:</strong> ' + result.id + '<br>';
+                            html += '<strong>项目名称:</strong> ' + projectName + '<br>';
+                            if (projectDescription) {
+                                html += '<strong>项目描述:</strong> ' + projectDescription + '<br>';
+                            }
+                            html += '<br><em>现在可以点击"测试 GetAllProjects"按钮查看新创建的项目。</em>';
+                            
+                            $('#result').html(html);
+                        } else {
+                            $('#result').html('<span class="error">✗ 项目创建失败: ' + result.message + '</span>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('CreateProject 错误:', error, xhr);
+                        $('#result').html('<span class="error">✗ AJAX 错误: ' + error + '</span><br><br>');
+                        $('#result').append('<strong>状态:</strong> ' + status + '<br>');
+                        $('#result').append('<strong>响应文本:</strong> ' + xhr.responseText);
+                    }
+                });
+            });
+            
+            // 清除结果
+            $('#btnClearResults').click(function() {
+                $('#result').html('结果已清除。点击按钮开始测试...');
+            });
+        });
+    </script>
+</body>
+</html>

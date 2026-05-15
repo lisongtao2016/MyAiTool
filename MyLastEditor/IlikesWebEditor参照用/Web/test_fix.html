@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>测试修复</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>测试修复</h1>
+    
+    <div id="test1" class="test-result">
+        <h3>测试 1: 测试转义HTML函数</h3>
+        <div id="test1-result"></div>
+    </div>
+    
+    <div id="test2" class="test-result">
+        <h3>测试 2: 模拟服务器数据</h3>
+        <div id="test2-result"></div>
+    </div>
+    
+    <div id="test3" class="test-result">
+        <h3>测试 3: 实际AJAX请求</h3>
+        <button onclick="testAjax()">测试AJAX</button>
+        <div id="test3-result"></div>
+    </div>
+    
+    <script>
+        // 正确的 escapeHtml 函数
+        function escapeHtml(text) {
+            if (text === undefined || text === null || text === '') return '';
+            var escapeMap = {
+                '&': '&',
+                '<': '<',
+                '>': '>',
+                '"': '"',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, function(match) { 
+                return escapeMap[match] || match; 
+            });
+        }
+        
+        // 测试转义函数
+        function testEscapeHtml() {
+            var tests = [
+                { input: '<script>alert("test")</script>', expected: '<script>alert("test")</script>' },
+                { input: 'Tom & Jerry', expected: 'Tom & Jerry' },
+                { input: 'a < b > c', expected: 'a < b > c' },
+                { input: "O'Connor", expected: 'O&#039;Connor' },
+                { input: '', expected: '' },
+                { input: null, expected: '' },
+                { input: undefined, expected: '' },
+                { input: '普通文本', expected: '普通文本' }
+            ];
+            
+            var html = '<table border="1"><tr><th>输入</th><th>期望输出</th><th>实际输出</th><th>结果</th></tr>';
+            
+            for (var i = 0; i < tests.length; i++) {
+                var test = tests[i];
+                var actual = escapeHtml(test.input);
+                var passed = actual === test.expected;
+                
+                html += '<tr>';
+                html += '<td>' + test.input + '</td>';
+                html += '<td>' + test.expected + '</td>';
+                html += '<td>' + actual + '</td>';
+                html += '<td>' + (passed ? '✅ 通过' : '❌ 失败') + '</td>';
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            document.getElementById('test1-result').innerHTML = html;
+        }
+        
+        // 模拟服务器数据
+        function testMockData() {
+            var mockData = [
+                { id: 2, title: "2", subtitle: "", author: "", hotTags: "", language: "ace/mode/javascript", createdDate: "2026-03-31 10:37:52" },
+                { id: 3, title: "234234", subtitle: "", author: "", hotTags: "", language: "ace/mode/javascript", createdDate: "2026-03-31 10:37:59" },
+                { id: 4, title: "aaa", subtitle: "", author: "", hotTags: "", language: "ace/mode/javascript", createdDate: "2026-03-31 14:35:12" },
+                { id: 29, title: "aa", subtitle: "", author: "aa", hotTags: "", language: "HTML", createdDate: "2026-04-03 11:10:09" }
+            ];
+            
+            var html = '<h4>模拟数据测试</h4>';
+            
+            for (var i = 0; i < mockData.length; i++) {
+                var content = mockData[i];
+                
+                // 提取字段（修复空字符串处理）
+                var rawTitle = content.title || content.Title;
+                var title = (rawTitle !== undefined && rawTitle !== null && rawTitle !== '') ? rawTitle : '无标题';
+                
+                var rawAuthor = content.author || content.Author;
+                var author = (rawAuthor !== undefined && rawAuthor !== null && rawAuthor !== '') ? rawAuthor : '匿名';
+                
+                var rawLanguage = content.language || content.Language;
+                var language = (rawLanguage !== undefined && rawLanguage !== null && rawLanguage !== '') ? rawLanguage : '未知';
+                
+                html += '<div style="border:1px solid #ccc; padding:10px; margin:5px;">';
+                html += '<div><strong>标题:</strong> ' + escapeHtml(title) + '</div>';
+                html += '<div><strong>作者:</strong> ' + escapeHtml(author) + '</div>';
+                html += '<div><strong>语言:</strong> ' + escapeHtml(language) + '</div>';
+                html += '<div><strong>原始标题:</strong> "' + rawTitle + '"</div>';
+                html += '<div><strong>原始作者:</strong> "' + rawAuthor + '"</div>';
+                html += '<div><strong>原始语言:</strong> "' + rawLanguage + '"</div>';
+                html += '</div>';
+            }
+            
+            document.getElementById('test2-result').innerHTML = html;
+        }
+        
+        // 测试实际AJAX请求
+        function testAjax() {
+            document.getElementById('test3-result').innerHTML = '请求中...';
+            
+            $.ajax({
+                type: "POST",
+                url: "WebForm1.aspx/GetAllContents",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(response) {
+                    var result = response.d ? JSON.parse(response.d) : response;
+                    
+                    if (result.success && result.contents) {
+                        var html = '<h4>实际服务器数据</h4>';
+                        html += '<p>找到 ' + result.contents.length + ' 条记录</p>';
+                        
+                        for (var i = 0; i < result.contents.length; i++) {
+                            var content = result.contents[i];
+                            
+                            // 使用相同的逻辑
+                            var rawTitle = content.title || content.Title;
+                            var title = (rawTitle !== undefined && rawTitle !== null && rawTitle !== '') ? rawTitle : '无标题';
+                            
+                            var rawAuthor = content.author || content.Author;
+                            var author = (rawAuthor !== undefined && rawAuthor !== null && rawAuthor !== '') ? rawAuthor : '匿名';
+                            
+                            var rawLanguage = content.language || content.Language;
+                            var language = (rawLanguage !== undefined && rawLanguage !== null && rawLanguage !== '') ? rawLanguage : '未知';
+                            
+                            html += '<div style="border:1px solid #ccc; padding:10px; margin:5px;">';
+                            html += '<div><strong>ID:</strong> ' + (content.id || content.Id) + '</div>';
+                            html += '<div><strong>标题:</strong> ' + escapeHtml(title) + ' <small>(原始:"' + rawTitle + '")</small></div>';
+                            html += '<div><strong>作者:</strong> ' + escapeHtml(author) + ' <small>(原始:"' + rawAuthor + '")</small></div>';
+                            html += '<div><strong>语言:</strong> ' + escapeHtml(language) + ' <small>(原始:"' + rawLanguage + '")</small></div>';
+                            html += '</div>';
+                        }
+                        
+                        document.getElementById('test3-result').innerHTML = html;
+                    } else {
+                        document.getElementById('test3-result').innerHTML = '错误: ' + (result.message || '未知错误');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    document.getElementById('test3-result').innerHTML = 'AJAX错误: ' + error;
+                }
+            });
+        }
+        
+        // 页面加载时运行测试
+        $(document).ready(function() {
+            testEscapeHtml();
+            testMockData();
+        });
+    </script>
+</body>
+</html>

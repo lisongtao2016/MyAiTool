@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IlikesWebEditor", "IlikesWebEditor.csproj", "{E5BCC3D0-BB0C-78F4-4853-B5BBF52C9B03}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E5BCC3D0-BB0C-78F4-4853-B5BBF52C9B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5BCC3D0-BB0C-78F4-4853-B5BBF52C9B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5BCC3D0-BB0C-78F4-4853-B5BBF52C9B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5BCC3D0-BB0C-78F4-4853-B5BBF52C9B03}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54887B3C-79D3-43FA-857E-5B1390EB395E}
+	EndGlobalSection
+EndGlobal

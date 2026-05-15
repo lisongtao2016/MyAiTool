@@ -1,0 +1,636 @@
+/* 紧凑主题 - Compact Theme */
+/* 设计理念：空间紧凑，编辑器优先，功能简洁 */
+
+/* 基础重置 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* 全局样式 */
+body.compact-theme {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* 主容器 - 最大化空间利用 */
+.container.compact-theme {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    display: flex;
+    overflow: hidden;
+}
+
+/* 侧边栏 - 紧凑设计 */
+.sidebar.compact-theme {
+    width: 260px;
+    background: #f8f9fa;
+    border-right: 1px solid #e9ecef;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+/* 侧边栏折叠状态 */
+.sidebar.compact-theme.collapsed {
+    width: 50px;
+    padding: 8px 4px;
+}
+
+.sidebar.compact-theme.collapsed .sidebar-title.compact-theme {
+    display: none;
+}
+
+.sidebar.compact-theme.collapsed .search-container {
+    display: none;
+}
+
+.sidebar.compact-theme.collapsed .compact-button {
+    display: none !important;
+}
+
+.sidebar.compact-theme.collapsed #btnLoadList {
+    display: none !important;
+}
+
+.sidebar.compact-theme.collapsed .content-list-container {
+    display: none;
+}
+
+/* 侧边栏折叠时的切换按钮 */
+.sidebar.compact-theme.collapsed .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* 项目选择器样式 */
+.project-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.project-selector-container .sidebar-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.project-select.compact-theme {
+    flex: 1;
+    min-width: 120px;
+    max-width: 200px;
+    height: 28px;
+    padding: 4px 8px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.project-select.compact-theme:hover {
+    border-color: #adb5bd;
+    background: #ffffff;
+}
+
+.project-select.compact-theme:focus {
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+}
+
+.project-management-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.project-btn.compact-theme {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.project-btn.compact-theme:hover {
+    border-color: #adb5bd;
+    background: #ffffff;
+}
+
+.project-btn.compact-theme:active {
+    background: #e9ecef;
+}
+
+#btnNewProject {
+    color: #40c057;
+}
+
+#btnEditProject {
+    color: #4dabf7;
+}
+
+#btnDeleteProject {
+    color: #fa5252;
+}
+
+/* 侧边栏折叠时隐藏项目选择器 */
+.sidebar.compact-theme.collapsed .project-selector-container {
+    display: none !important;
+}
+
+/* 侧边栏标题 */
+.sidebar-title.compact-theme {
+    font-weight: 600;
+    color: #212529;
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 搜索框 - 紧凑 */
+.search-box.compact-theme {
+    width: 100%;
+    padding: 6px 8px;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    color: #212529;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.15s ease;
+    margin-bottom: 8px;
+    height: 32px;
+}
+
+.search-box.compact-theme:focus {
+    border-color: #228be6;
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.1);
+}
+
+.search-box.compact-theme::placeholder {
+    color: #868e96;
+}
+
+/* 按钮 - 紧凑 */
+.compact-button {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    background: #ffffff !important;
+    color: #212529 !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+}
+
+.compact-button:hover {
+    background: #f8f9fa !important;
+    border-color: #adb5bd !important;
+}
+
+.compact-button:active {
+    background: #e9ecef !important;
+}
+
+/* 内容列表容器 */
+#contentListContainer.compact-theme {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin-top: 8px;
+}
+
+#contentList.compact-theme {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    background: #ffffff;
+    padding: 4px;
+    min-height: 0;
+}
+
+/* 内容列表项 - 紧凑 */
+.content-list-container.compact-theme {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.content-list-item.compact-theme {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 3px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 36px;
+    font-size: 13px;
+    position: relative;
+}
+
+.content-list-item.compact-theme:hover {
+    background: #f8f9fa;
+    border-color: #228be6;
+}
+
+/* 操作区域 - 放在最前边 */
+.action-area.compact-theme {
+    flex-shrink: 0;
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.delete-icon-btn.compact-theme {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #868e96;
+    padding: 4px;
+    transition: all 0.15s ease;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-icon-btn.compact-theme:hover {
+    background: #f8f9fa;
+    color: #fa5252;
+}
+
+/* 内容区域 */
+.content-area.compact-theme {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.content-title.compact-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    color: #212529;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.content-subtitle.compact-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #868e96;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+/* jQuery UI 工具提示样式 */
+.content-tooltip {
+    padding: 0 !important;
+    border: 1px solid #228be6 !important;
+    border-radius: 4px !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    max-width: 300px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+.ui-tooltip-content {
+    padding: 12px !important;
+}
+
+/* 工具提示内容样式 */
+.tooltip-content {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.tooltip-header {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 13px;
+}
+
+.tooltip-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tooltip-row {
+    display: flex;
+    align-items: flex-start;
+}
+
+.tooltip-label {
+    font-weight: 500;
+    color: #868e96;
+    min-width: 70px;
+    margin-right: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.tooltip-value {
+    color: #212529;
+    flex: 1;
+    word-break: break-word;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.tooltip-value.highlight {
+    color: #228be6;
+    font-weight: 500;
+}
+
+/* 主内容区域 - 编辑器优先 */
+.main-content.compact-theme {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* 内容管理容器 - 高度压缩 */
+.content-management-container.compact-theme {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    padding: 8px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    min-height: auto;
+}
+
+/* 输入框行 - 紧凑布局 */
+.content-management-container.compact-theme > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.content-management-container.compact-theme > div:last-child {
+    margin-bottom: 0;
+}
+
+/* 标签 */
+.label.compact-theme {
+    font-weight: 500;
+    color: #495057;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 60px;
+}
+
+/* 输入框 - 紧凑 */
+#contentTitle.compact-theme,
+#contentSubtitle.compact-theme,
+#contentAuthor.compact-theme,
+#contentHotTags.compact-theme,
+#contentShareTo.compact-theme {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #212529;
+    height: 28px;
+    flex: 1;
+    min-width: 120px;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+#contentTitle.compact-theme:focus,
+#contentSubtitle.compact-theme:focus,
+#contentAuthor.compact-theme:focus,
+#contentHotTags.compact-theme:focus,
+#contentShareTo.compact-theme:focus {
+    border-color: #228be6;
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.1);
+}
+
+/* 编辑器工具栏 - 紧凑 */
+.editor-toolbar.compact-theme {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #495057;
+    height: 28px;
+}
+
+/* 语言选择器 */
+#languageSelect.compact-theme {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 12px;
+    background: #ffffff;
+    color: #212529;
+    cursor: pointer;
+    outline: none;
+    height: 28px;
+    min-width: 140px;
+}
+
+#languageSelect.compact-theme:hover {
+    border-color: #adb5bd;
+}
+
+#languageSelect.compact-theme:focus {
+    border-color: #228be6;
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.1);
+}
+
+/* 保存按钮 */
+#btnSave.compact-theme {
+    padding: 4px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border: 1px solid #228be6 !important;
+    border-radius: 3px !important;
+    background: #228be6 !important;
+    color: #ffffff !important;
+    height: 28px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+#btnSave.compact-theme:hover {
+    background: #1971c2 !important;
+    border-color: #1971c2 !important;
+}
+
+#btnSave.compact-theme:active {
+    background: #1864ab !important;
+}
+
+/* 编辑器容器 - 最大化空间 */
+.editor-container.compact-theme {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+/* Ace 编辑器 */
+#aceEditorWrapper.compact-theme {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+#editor.compact-theme {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+/* KindEditor 编辑器 */
+#kindEditorWrapper.compact-theme {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: none;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 修复编辑器内容居中问题 */
+.ace_editor.compact-theme,
+.ace_editor.compact-theme * {
+    text-align: left !important;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+
+/* 滚动条 - 紧凑 */
+#contentList.compact-theme::-webkit-scrollbar {
+    width: 6px;
+}
+
+#contentList.compact-theme::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+}
+
+#contentList.compact-theme::-webkit-scrollbar-thumb {
+    background: #ced4da;
+    border-radius: 3px;
+}
+
+#contentList.compact-theme::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+/* 无内容消息 */
+.no-content-message.compact-theme {
+    color: #868e96;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+}
+
+/* 编辑中高亮 */
+.editing-highlight.compact-theme {
+    background: #e7f5ff !important;
+    border-color: #a5d8ff !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container.compact-theme {
+        flex-direction: column;
+    }
+    
+    .sidebar.compact-theme {
+        width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+        max-height: 200px;
+    }
+    
+    .content-list-item.compact-theme:hover {
+        /* 移除宽度变化效果 */
+    }
+    
+    .content-management-container.compact-theme > div {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

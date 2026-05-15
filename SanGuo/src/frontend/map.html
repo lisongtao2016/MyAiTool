@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>三國志11風格 - 圖片背景版</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #1a1a1a; color: #e0cda9; font-family: "Microsoft YaHei", serif; user-select: none; }
+        
+        /* UI 层 */
+        #ui-layer { position: absolute; top: 20px; left: 20px; pointer-events: none; z-index: 10; }
+        .stat-box { background: rgba(40, 30, 20, 0.85); border: 2px solid #8b7355; padding: 12px; border-radius: 4px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        
+        /* Loading 遮罩 */
+        #loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a1a1a; color: #d4af37;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; z-index: 100; flex-direction: column;
+        }
+
+        /* 小地图容器 */
+        #minimap-container { 
+            position: absolute; top: 20px; right: 20px; 
+            width: 200px; height: 200px; 
+            background: rgba(0,0,0,0.5); border: 2px solid #8b7355;
+            cursor: crosshair; overflow: hidden; z-index: 10;
+        }
+        #minimapCanvas { width: 100%; height: 100%; }
+        
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <div>正在加载九州地圖...</div>
+    <div style="font-size: 14px; margin-top: 10px;">(大图片首次加载可能较慢)</div>
+</div>
+
+<div id="ui-layer">
+    <div class="stat-box">
+        <h3 style="margin: 0 0 5px 0; color: #d4af37;">大連風雲録</h3>
+        <div style="font-size: 14px;">坐标: <span id="coord">0, 0</span></div>
+    </div>
+</div>
+
+<div id="minimap-container">
+    <canvas id="minimapCanvas"></canvas>
+</div>
+
+<canvas id="mapCanvas"></canvas>
+
+<script>
+/**
+ * 配置与初始化
+ */
+const canvas = document.getElementById('mapCanvas');
+const ctx = canvas.getContext('2d');
+const miniCanvas = document.getElementById('minimapCanvas');
+const miniCtx = miniCanvas.getContext('2d');
+const coordDisplay = document.getElementById('coord');
+const loadingScreen = document.getElementById('loading');
+
+// --- 关键配置：你的地图图片路径 ---
+// 建议使用 jpg 以减少文件大小，如果是超大图，建议切片加载（本示例为简化，直接加载整图）
+const MAP_IMAGE_URL = 'map.png'; 
+// 占位图链接，你可以换成你自己的本地路径，如 'images/world_map.jpg'
+
+const MAP_SIZE = 1000;    // 逻辑格子数 (1000x1000)
+const TILE_SIZE = 50;     // 每个逻辑格子对应的像素大小 (用于坐标计算)
+
+// 游戏状态
+let scale = 0.3;          
+let offsetX = -1500;      
+let offsetY = -1500;
+let mapImage = new Image();
+let isMapLoaded = false;
+
+// 1. 初始化画布
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // 小地图分辨率设为地图逻辑尺寸的比例
+    miniCanvas.width = MAP_SIZE;
+    miniCanvas.height = MAP_SIZE;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// 2. 加载大地图图片
+mapImage.src = MAP_IMAGE_URL;
+mapImage.onload = () => {
+    isMapLoaded = true;
+    loadingScreen.style.display = 'none'; // 隐藏加载中
+    
+    // 异步生成小地图背景（提高启动速度）
+    requestIdleCallback(preRenderMinimap); 
+    
+    // 开始主循环
+    requestAnimationFrame(draw);
+};
+mapImage.onerror = () => {
+    loadingScreen.innerHTML = '<div style="color:red">地图加载失败，请检查图片路径。</div>';
+};
+
+/**
+ * 预渲染小地图 (将大图绘制到小 Canvas 上缓存)
+ */
+function preRenderMinimap() {
+    // 将整张大图压缩绘制到小地图 Canvas 上
+    miniCtx.drawImage(mapImage, 0, 0, miniCanvas.width, miniCanvas.height);
+    // 此时小地图背景已经就绪
+}
+
+/**
+ * 核心绘制循环
+ */
+function draw() {
+    if (!isMapLoaded) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // --- 1. 绘制主地图图片 (视口裁剪模式) ---
+    ctx.save();
+    
+    // 应用变换 (缩放和位移)
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(scale, scale);
+
+    // 核心性能优化：Canvas 自动处理 drawImage 的裁剪
+    // 我们只需告诉它：把整张大图，绘制到逻辑上的地图全尺寸区域即可。
+    // Canvas 底层会只渲染视口内可见的部分。
+    ctx.drawImage(mapImage, 0, 0, MAP_SIZE * TILE_SIZE, MAP_SIZE * TILE_SIZE);
+    
+    // 如果需要，依然可以绘制一层淡网格 (可选)
+    if (scale > 0.5) {
+        drawGrid();
+    }
+    
+    ctx.restore();
+
+    // --- 2. 绘制小地图 UI overlay ---
+    drawMinimapOverlay();
+
+    requestAnimationFrame(draw);
+}
+
+// 可选：绘制逻辑网格线
+function drawGrid() {
+    ctx.strokeStyle = "rgba(0,0,0,0.08)";
+    ctx.lineWidth = 1 / scale; // 保持线宽不随缩放变化
+    ctx.beginPath();
+    // 考虑到性能，只绘制视口内的网格 (这里为简化省略裁剪，整图drawImage已有culling)
+    // 如果需要极致性能，这里需要计算视口范围再 for 循环 drawLine
+    ctx.stroke();
+}
+
+// 绘制小地图上的白色视口框
+function drawMinimapOverlay() {
+    // 1. 清空并重新绘制小地图背景图片
+    miniCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
+    miniCtx.drawImage(mapImage, 0, 0, miniCanvas.width, miniCanvas.height);
+
+    // 2. 计算当前视口在小地图上的比例位置
+    const totalPixelWidth = MAP_SIZE * TILE_SIZE;
+    const totalPixelHeight = MAP_SIZE * TILE_SIZE;
+
+    const viewX = (-offsetX / scale) / totalPixelWidth * miniCanvas.width;
+    const viewY = (-offsetY / scale) / totalPixelHeight * miniCanvas.height;
+    const viewWidth = (canvas.width / scale) / totalPixelWidth * miniCanvas.width;
+    const viewHeight = (canvas.height / scale) / totalPixelHeight * miniCanvas.height;
+
+    // 3. 绘制框
+    miniCtx.strokeStyle = "#ffffff";
+    miniCtx.lineWidth = 12; // 强化视口边框可见度
+    miniCtx.strokeRect(viewX, viewY, viewWidth, viewHeight);
+    
+    // 加上半透明遮罩
+    miniCtx.fillStyle = "rgba(255, 255, 255, 0.15)";
+    miniCtx.fillRect(viewX, viewY, viewWidth, viewHeight);
+}
+
+/**
+ * 交互逻辑 (与之前基本一致，只是 TILE_SIZE 现在仅用于坐标计算)
+ */
+let isDragging = false;
+let lastMouse = { x: 0, y: 0 };
+
+// 拖拽主地图
+canvas.onmousedown = (e) => { 
+    if (e.target.id !== 'mapCanvas') return;
+    isDragging = true; 
+    lastMouse = { x: e.clientX, y: e.clientY }; 
+    canvas.style.cursor = 'grabbing'; 
+};
+window.onmouseup = () => { isDragging = false; canvas.style.cursor = 'grab'; };
+window.onmousemove = (e) => {
+    if (isDragging) {
+        offsetX += e.clientX - lastMouse.x;
+        offsetY += e.clientY - lastMouse.y;
+        lastMouse = { x: e.clientX, y: e.clientY };
+    }
+    // 逻辑坐标计算：(当前屏幕坐标 - 偏移量) / 缩放 / 逻辑格子大小
+    const worldX = Math.floor(((e.clientX - offsetX) / scale) / TILE_SIZE);
+    const worldY = Math.floor(((e.clientY - offsetY) / scale) / TILE_SIZE);
+    if(worldX >=0 && worldX < MAP_SIZE && worldY >=0 && worldY < MAP_SIZE) {
+        coordDisplay.innerText = `${worldX}, ${worldY}`;
+    }
+};
+
+// 缩放逻辑
+canvas.onwheel = (e) => {
+    e.preventDefault();
+    const zoomSpeed = 0.0015;
+    const newScale = Math.min(Math.max(scale - e.deltaY * zoomSpeed, 0.04), 1.5);
+    const mouseWorldX = (e.clientX - offsetX) / scale;
+    const mouseWorldY = (e.clientY - offsetY) / scale;
+    scale = newScale;
+    offsetX = e.clientX - mouseWorldX * scale;
+    offsetY = e.clientY - mouseWorldY * scale;
+};
+
+// 小地图点击跳转
+document.getElementById('minimap-container').onmousedown = function(e) {
+    const rect = this.getBoundingClientRect();
+    const clickX = (e.clientX - rect.left) / rect.width; // 0~1 比例
+    const clickY = (e.clientY - rect.top) / rect.height;
+    
+    // 将主地图中心移动到点击位置 (逻辑像素坐标)
+    const totalPixelWidth = MAP_SIZE * TILE_SIZE;
+    const totalPixelHeight = MAP_SIZE * TILE_SIZE;
+    
+    offsetX = -(clickX * totalPixelWidth * scale) + (canvas.width / 2);
+    offsetY = -(clickY * totalPixelHeight * scale) + (canvas.height / 2);
+};
+
+</script>
+</body>
+</html>

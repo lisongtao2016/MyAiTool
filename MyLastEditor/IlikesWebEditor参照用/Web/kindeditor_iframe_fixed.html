@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>KindEditor 独立页面 - 修复版</title>
+    <!-- KindEditor -->
+    <link rel="stylesheet" href="js/kindeditor-master/themes/default/default.css" />
+    <script charset="utf-8" src="js/kindeditor-master/kindeditor-all.js"></script>
+    <script charset="utf-8" src="js/kindeditor-master/lang/zh-CN.js"></script>
+    <script src="js/jquery-4.0.0.min.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #ffffff;
+            height: 100%;
+            min-height: 300px;
+            overflow: hidden;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #kindEditorContainer {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #kindEditor {
+            visibility: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 修复：确保 KindEditor 容器可以正确调整大小 */
+        .ke-container {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 200px !important;
+            position: relative !important;
+            overflow: visible !important;
+        }
+        
+        .ke-edit {
+            height: calc(100% - 35px) !important; /* 减去工具栏高度 */
+            min-height: 200px !important;
+            overflow: auto !important;
+        }
+        
+        .ke-edit-iframe {
+            height: 100% !important;
+            min-height: 200px !important;
+        }
+        
+        /* 确保调整大小手柄可见 */
+        .ke-resize {
+            display: block !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            width: 16px !important;
+            height: 16px !important;
+            background: #f0f0f0 !important;
+            border: 1px solid #ccc !important;
+            cursor: se-resize !important;
+            z-index: 1000 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="kindEditorContainer">
+        <textarea id="kindEditor" name="editor1"></textarea>
+    </div>
+    
+    <script>
+        // 全局变量，用于与父页面通信
+        window.kindEditorInstance = null;
+        window.parentPage = window.parent;
+        
+        // 计算可用高度
+        function calculateAvailableHeight() {
+            var container = document.getElementById('kindEditorContainer');
+            var height = container.clientHeight;
+            console.log('KindEditor 修复版: 计算可用高度', height + 'px');
+            return Math.max(height, 200);
+        }
+        
+        // 初始化 KindEditor - 修复版
+        function initKindEditor() {
+            if (typeof KindEditor !== 'undefined') {
+                console.log('KindEditor 修复版: 开始初始化...');
+                
+                // 先计算高度
+                var height = calculateAvailableHeight();
+                
+                window.kindEditorInstance = KindEditor.create('#kindEditor', {
+                    allowFileManager: true,
+                    langType: 'zh-CN',
+                    width: '100%',
+                    height: height + 'px', // 使用具体像素值而不是百分比
+                    resizeType: 2, // 允许拖动调整宽高
+                    minWidth: 100,
+                    minHeight: 150,
+                    afterCreate: function() {
+                        // 确保编辑器内容左对齐
+                        try {
+                            var editorBody = this.edit.doc.body;
+                            if (editorBody) {
+                                editorBody.style.textAlign = 'left';
+                                editorBody.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                                editorBody.style.fontSize = '14px';
+                                editorBody.style.lineHeight = '1.5';
+                            }
+                            
+                            // 确保调整大小手柄可见 - 使用更安全的方法
+                            try {
+                                // 使用 document.querySelector 而不是 this.container.querySelector
+                                var resizeHandle = document.querySelector('.ke-resize');
+                                if (resizeHandle) {
+                                    resizeHandle.style.display = 'block';
+                                    resizeHandle.style.visibility = 'visible';
+                                    console.log('KindEditor 修复版: 调整大小手柄已启用');
+                                } else {
+                                    // 如果找不到，尝试通过编辑器容器查找
+                                    var editorContainer = document.getElementById('kindEditor');
+                                    if (editorContainer) {
+                                        resizeHandle = editorContainer.querySelector('.ke-resize');
+                                        if (resizeHandle) {
+                                            resizeHandle.style.display = 'block';
+                                            resizeHandle.style.visibility = 'visible';
+                                            console.log('KindEditor 修复版: 调整大小手柄已启用（通过容器）');
+                                        }
+                                    }
+                                }
+                            } catch (resizeError) {
+                                console.warn('设置调整大小手柄失败:', resizeError);
+                            }
+                        } catch (e) {
+                            console.warn('设置编辑器内容样式失败:', e);
+                        }
+                        
+                        // 通知父页面编辑器已就绪
+                        if (window.parentPage) {
+                            try {
+                                window.parentPage.postMessage({
+                                    type: 'kindeditor_ready',
+                                    source: 'kindeditor_iframe',
+                                    height: height
+                                }, '*');
+                            } catch (e) {
+                                console.warn('通知父页面失败:', e);
+                            }
+                        }
+                        
+                        console.log('KindEditor 修复版: 初始化完成，高度:', height + 'px');
+                    },
+                    afterChange: function() {
+                        // 内容变化时通知父页面
+                        if (window.parentPage) {
+                            try {
+                                window.parentPage.postMessage({
+                                    type: 'kindeditor_content_changed',
+                                    content: this.html()
+                                }, '*');
+                            } catch (e) {
+                                console.warn('发送内容变化通知失败:', e);
+                            }
+                        }
+                    },
+                    afterResize: function() {
+                        console.log('KindEditor 修复版: 编辑器大小已调整');
+                        // 通知父页面编辑器大小已变化
+                        if (window.parentPage) {
+                            try {
+                                window.parentPage.postMessage({
+                                    type: 'kindeditor_resized',
+                                    source: 'kindeditor_iframe'
+                                }, '*');
+                            } catch (e) {
+                                console.warn('通知父页面编辑器大小变化失败:', e);
+                            }
+                        }
+                    }
+                });
+                
+                console.log('KindEditor 修复版: 编辑器实例创建成功');
+                
+                // 监听窗口大小变化
+                window.addEventListener('resize', function() {
+                    if (window.kindEditorInstance) {
+                        var newHeight = calculateAvailableHeight();
+                        console.log('窗口大小变化，重新计算高度:', newHeight + 'px');
+                        // 这里可以更新编辑器大小，但 KindEditor 内部会自动处理
+                    }
+                });
+            } else {
+                console.error('KindEditor 修复版: KindEditor 库未加载');
+            }
+        }
+        
+        // 监听父页面消息
+        window.addEventListener('message', function(event) {
+            var data = event.data;
+            
+            if (!data || !data.type) return;
+            
+            console.log('KindEditor 修复版: 收到消息', data.type);
+            
+            switch (data.type) {
+                case 'set_content':
+                    if (window.kindEditorInstance) {
+                        window.kindEditorInstance.html(data.content || '');
+                        console.log('KindEditor 修复版: 内容已设置');
+                    }
+                    break;
+                    
+                case 'get_content':
+                    if (window.parentPage && window.kindEditorInstance) {
+                        var content = window.kindEditorInstance.html();
+                        window.parentPage.postMessage({
+                            type: 'kindeditor_content_response',
+                            content: content
+                        }, '*');
+                        console.log('KindEditor 修复版: 内容已发送');
+                    }
+                    break;
+                    
+                case 'sync_to_kindeditor':
+                    if (window.kindEditorInstance && data.content !== undefined) {
+                        window.kindEditorInstance.html(data.content);
+                        console.log('KindEditor 修复版: 已同步内容');
+                    }
+                    break;
+                    
+                case 'show_editor':
+                    document.getElementById('kindEditorContainer').style.display = 'block';
+                    console.log('KindEditor 修复版: 显示编辑器');
+                    break;
+                    
+                case 'hide_editor':
+                    document.getElementById('kindEditorContainer').style.display = 'none';
+                    console.log('KindEditor 修复版: 隐藏编辑器');
+                    break;
+                    
+                case 'refresh_editor':
+                    if (window.kindEditorInstance) {
+                        var height = calculateAvailableHeight();
+                        console.log('KindEditor 修复版: 刷新编辑器，高度:', height + 'px');
+                        // 这里可以重新设置编辑器大小
+                    }
+                    break;
+            }
+        });
+        
+        // 文档加载完成后初始化
+        $(document).ready(function() {
+            console.log('KindEditor 修复版: 文档加载完成');
+            initKindEditor();
+        });
+        
+        // 向父页面报告 iframe 已加载
+        window.addEventListener('load', function() {
+            console.log('KindEditor 修复版: 页面加载完成');
+            if (window.parentPage) {
+                try {
+                    window.parentPage.postMessage({
+                        type: 'iframe_loaded',
+                        source: 'kindeditor_iframe',
+                        version: 'fixed'
+                    }, '*');
+                } catch (e) {
+                    console.warn('发送加载完成通知失败:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

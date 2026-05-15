@@ -1,0 +1,725 @@
+/* Material Design 主题 - Google Material Design Theme */
+/* 设计理念：简洁、现代、有层次感、响应式 */
+
+/* 基础颜色定义 - Material Design 调色板 */
+:root {
+    /* 主要颜色 */
+    --md-primary: #6200ee;      /* 深紫色 - 主要品牌色 */
+    --md-primary-light: #bb86fc; /* 浅紫色 */
+    --md-primary-dark: #3700b3;  /* 深紫色 */
+    
+    /* 次要颜色 */
+    --md-secondary: #03dac6;    /* 青色 - 次要品牌色 */
+    --md-secondary-light: #66fff9; /* 浅青色 */
+    --md-secondary-dark: #00a896;  /* 深青色 */
+    
+    /* 背景颜色 */
+    --md-background: #ffffff;    /* 白色背景 */
+    --md-surface: #ffffff;       /* 表面颜色 */
+    --md-error: #b00020;        /* 错误颜色 */
+    
+    /* 文本颜色 */
+    --md-on-primary: #ffffff;    /* 主要颜色上的文本 */
+    --md-on-secondary: #000000;  /* 次要颜色上的文本 */
+    --md-on-background: #000000; /* 背景上的文本 */
+    --md-on-surface: #000000;    /* 表面上的文本 */
+    --md-on-error: #ffffff;      /* 错误颜色上的文本 */
+    
+    /* 阴影和高度 */
+    --md-elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --md-elevation-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    --md-elevation-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    --md-elevation-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    --md-elevation-5: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    
+    /* 圆角 */
+    --md-border-radius-small: 4px;
+    --md-border-radius-medium: 8px;
+    --md-border-radius-large: 12px;
+    --md-border-radius-xlarge: 16px;
+    
+    /* 间距 */
+    --md-spacing-xs: 4px;
+    --md-spacing-sm: 8px;
+    --md-spacing-md: 16px;
+    --md-spacing-lg: 24px;
+    --md-spacing-xl: 32px;
+    --md-spacing-xxl: 48px;
+    
+    /* 动画 */
+    --md-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --md-transition-medium: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --md-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 全局 Material Design 风格重置 */
+body.md-theme {
+    font-family: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--md-background);
+    color: var(--md-on-background);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    line-height: 1.5;
+}
+
+/* 容器 - Material Design 卡片 */
+.container.md-theme {
+    width: 98%;
+    max-width: 98%;
+    height: 98vh;
+    margin: 1vh auto;
+    background: var(--md-surface);
+    border-radius: var(--md-border-radius-large);
+    box-shadow: var(--md-elevation-3);
+    padding: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 98vh;
+    overflow: hidden;
+    transition: all var(--md-transition-medium);
+}
+
+/* 侧边栏 - Material Design 导航抽屉 */
+.sidebar.md-theme {
+    width: 280px;
+    background: var(--md-surface);
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+    padding: var(--md-spacing-md);
+    transition: all var(--md-transition-medium);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-height: 0;
+    height: 100%;
+    border-radius: var(--md-border-radius-large) 0 0 var(--md-border-radius-large);
+    position: relative;
+    box-shadow: var(--md-elevation-1);
+}
+
+/* 侧边栏标题 - Material Design 标题 */
+.sidebar-title.md-theme {
+    font-weight: 500;
+    color: var(--md-primary);
+    font-size: 20px;
+    letter-spacing: 0.15px;
+    margin-bottom: var(--md-spacing-lg);
+    padding-bottom: var(--md-spacing-sm);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    gap: var(--md-spacing-sm);
+}
+
+/* 侧边栏切换按钮 - Material Design 图标按钮 */
+.sidebar-toggle.md-theme {
+    background: transparent;
+    border: none;
+    color: var(--md-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--md-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-toggle.md-theme:hover {
+    background: rgba(98, 0, 238, 0.08);
+}
+
+.sidebar-toggle.md-theme:active {
+    background: rgba(98, 0, 238, 0.16);
+}
+
+/* 搜索框 - Material Design 文本字段 */
+.search-box.md-theme {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: var(--md-border-radius-medium);
+    color: var(--md-on-surface);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: all var(--md-transition-fast);
+    box-sizing: border-box;
+    margin-bottom: var(--md-spacing-lg);
+}
+
+.search-box.md-theme:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding: 11px 15px; /* 补偿边框宽度增加 */
+}
+
+.search-box.md-theme::placeholder {
+    color: rgba(0, 0, 0, 0.54);
+    font-weight: 400;
+}
+
+/* 按钮 - Material Design 按钮 */
+.md-button {
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border: none !important;
+    border-radius: var(--md-border-radius-medium) !important;
+    cursor: pointer !important;
+    transition: all var(--md-transition-fast) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.25px !important;
+    font-family: 'Roboto', sans-serif !important;
+    box-shadow: var(--md-elevation-1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-height: 36px !important;
+}
+
+.md-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-transition-fast);
+}
+
+.md-button:hover::before {
+    opacity: 0.08;
+}
+
+.md-button:active::before {
+    opacity: 0.16;
+}
+
+.md-button-primary {
+    background: var(--md-primary) !important;
+    color: var(--md-on-primary) !important;
+    width: 100%;
+    margin-bottom: var(--md-spacing-md);
+}
+
+.md-button-primary:hover {
+    box-shadow: var(--md-elevation-2) !important;
+}
+
+.md-button-save {
+    background: var(--md-secondary) !important;
+    color: var(--md-on-secondary) !important;
+}
+
+.md-button-save:hover {
+    box-shadow: var(--md-elevation-2) !important;
+}
+
+/* 输入框 - Material Design 文本字段 */
+#contentTitle.md-theme,
+#contentSubtitle.md-theme,
+#contentAuthor.md-theme,
+#contentHotTags.md-theme,
+#contentShareTo.md-theme {
+    padding: 12px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: var(--md-border-radius-medium);
+    font-size: 16px;
+    transition: all var(--md-transition-fast);
+    outline: none;
+    background: transparent;
+    color: var(--md-on-surface);
+    font-family: 'Roboto', sans-serif;
+    width: calc(100% - 140px);
+    box-sizing: border-box;
+}
+
+#contentTitle.md-theme:focus,
+#contentSubtitle.md-theme:focus,
+#contentAuthor.md-theme:focus,
+#contentHotTags.md-theme:focus,
+#contentShareTo.md-theme:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding: 11px 15px; /* 补偿边框宽度增加 */
+}
+
+/* 内容列表容器 - Material Design 列表 */
+#contentListContainer.md-theme {
+    margin-top: var(--md-spacing-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#contentList.md-theme {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--md-border-radius-medium);
+    background: var(--md-surface);
+    box-shadow: var(--md-elevation-1);
+    min-height: 200px;
+    padding: var(--md-spacing-sm);
+    position: relative;
+}
+
+/* 内容列表项 - Material Design 列表项 */
+.content-list-container.md-theme {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md-spacing-xs);
+    overflow: visible !important;
+}
+
+.content-list-item.md-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+    border-radius: var(--md-border-radius-medium);
+    background: var(--md-surface);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: all var(--md-transition-fast);
+    position: relative;
+    min-height: 56px;
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: 'Roboto', sans-serif;
+    color: var(--md-on-surface);
+}
+
+.content-list-item.md-theme:hover {
+    /* Material Design 悬停效果 - 阴影提升和背景变化 */
+    z-index: 9999 !important;
+    background: var(--md-surface);
+    box-shadow: var(--md-elevation-3);
+    border: 1px solid rgba(98, 0, 238, 0.3);
+    padding: var(--md-spacing-md) var(--md-spacing-lg);
+    transform: translateX(0) scale(1.005);
+    animation: mdExpandRow 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    position: relative;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+@keyframes mdExpandRow {
+    from {
+        transform: translateX(0) scale(1);
+        opacity: 0.8;
+        box-shadow: var(--md-elevation-1);
+        min-height: 56px;
+    }
+    to {
+        transform: translateX(0) scale(1.01);
+        opacity: 1;
+        box-shadow: var(--md-elevation-4);
+        min-height: 180px;
+    }
+}
+
+/* 详细信息容器 */
+.content-details-container {
+    display: none;
+    margin-top: var(--md-spacing-md);
+    padding-top: var(--md-spacing-md);
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    animation: mdDetailsFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes mdDetailsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-list-item.md-theme:hover .content-details-container {
+    display: block;
+}
+
+/* 详细信息网格布局 */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--md-spacing-sm);
+    margin-top: var(--md-spacing-sm);
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: var(--md-spacing-xs);
+}
+
+.detail-label {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    color: var(--md-primary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 80px;
+    margin-right: var(--md-spacing-sm);
+}
+
+.detail-value {
+    font-family: 'Roboto', sans-serif;
+    color: var(--md-on-surface);
+    font-size: 14px;
+    flex: 1;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.detail-value.highlight {
+    color: var(--md-primary);
+    font-weight: 500;
+}
+
+/* 内容区域调整 */
+.content-list-item.md-theme:hover .content-area {
+    overflow: visible;
+    margin-bottom: var(--md-spacing-sm);
+}
+
+.content-title.md-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    font-size: 16px;
+    letter-spacing: 0.15px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all var(--md-transition-fast);
+}
+
+.content-list-item.md-theme:hover .content-title.md-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: var(--md-primary);
+    font-size: 18px;
+    margin-bottom: var(--md-spacing-xs);
+}
+
+.content-subtitle.md-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Roboto', sans-serif !important;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all var(--md-transition-fast);
+}
+
+.content-list-item.md-theme:hover .content-subtitle.md-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: rgba(0, 0, 0, 0.87);
+    font-size: 15px;
+    margin-bottom: var(--md-spacing-sm);
+}
+
+/* 操作区域 - Material Design 图标按钮 */
+.action-area.md-theme {
+    flex-shrink: 0;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-icon-btn.md-theme {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: rgba(0, 0, 0, 0.54);
+    padding: 8px;
+    transition: all var(--md-transition-fast);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-icon-btn.md-theme:hover {
+    background: rgba(176, 0, 32, 0.08);
+    color: var(--md-error);
+}
+
+.delete-icon-btn.md-theme:active {
+    background: rgba(176, 0, 32, 0.16);
+}
+
+/* 滚动条 - Material Design 风格 */
+#contentList.md-theme::-webkit-scrollbar {
+    width: 8px;
+}
+
+#contentList.md-theme::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+#contentList.md-theme::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+#contentList.md-theme::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 编辑器区域 - Material Design 卡片 */
+#editor.md-theme {
+    margin-top: 0;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--md-border-radius-medium);
+    overflow: hidden;
+    box-shadow: var(--md-elevation-1);
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    background: var(--md-surface);
+}
+
+/* 语言选择器 - Material Design 下拉菜单 */
+#languageSelect.md-theme {
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: var(--md-border-radius-medium);
+    color: var(--md-on-surface);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all var(--md-transition-fast);
+    outline: none;
+    width: auto;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+#languageSelect.md-theme:hover {
+    border-color: var(--md-primary);
+}
+
+#languageSelect.md-theme:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding: 11px 15px; /* 补偿边框宽度增加 */
+}
+
+/* 无内容消息 */
+.no-content-message.md-theme {
+    color: rgba(0, 0, 0, 0.54);
+    font-style: italic;
+    text-align: center;
+    padding: var(--md-spacing-xl) var(--md-spacing-md);
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* 编辑中高亮样式 */
+.editing-highlight.md-theme {
+    color: var(--md-primary) !important;
+    font-weight: 500 !important;
+    background: rgba(98, 0, 238, 0.04) !important;
+    border-color: var(--md-primary) !important;
+}
+
+/* Material Design Logo 效果 */
+.md-logo {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: var(--md-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-on-primary);
+    font-size: 20px;
+    font-weight: 500;
+    box-shadow: var(--md-elevation-3);
+    z-index: 1000;
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--md-transition-medium);
+}
+
+.md-logo:hover {
+    background: var(--md-primary-dark);
+    box-shadow: var(--md-elevation-4);
+    transform: translateY(-2px);
+}
+
+.md-logo:active {
+    background: var(--md-primary-dark);
+    box-shadow: var(--md-elevation-2);
+    transform: translateY(0);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container.md-theme {
+        flex-direction: column;
+    }
+    
+    .sidebar.md-theme {
+        width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        max-height: 300px;
+        border-radius: var(--md-border-radius-large) var(--md-border-radius-large) 0 0;
+    }
+    
+    .content-list-item.md-theme:hover {
+        width: 90vw !important;
+        max-width: 90vw;
+        min-width: 90vw;
+        margin-right: -45vw;
+    }
+    
+    .md-logo {
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
+        bottom: 16px;
+        right: 16px;
+    }
+}
+
+/* 加载状态 */
+@keyframes mdPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+button:disabled.md-theme {
+    animation: mdPulse 1.5s infinite;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 文本选择效果 */
+::selection.md-theme {
+    background: rgba(98, 0, 238, 0.2);
+    color: var(--md-on-surface);
+}
+
+::-moz-selection.md-theme {
+    background: rgba(98, 0, 238, 0.2);
+    color: var(--md-on-surface);
+}
+
+/* 标签样式 */
+.label {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    color: var(--md-primary);
+    font-size: 14px;
+    margin-right: 8px;
+    display: inline-block;
+    min-width: 60px;
+}
+
+/* 主内容区域 */
+.main-content {
+    flex: 1;
+    padding: var(--md-spacing-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* 内容管理容器 */
+.content-management-container {
+    background: var(--md-surface);
+    border-radius: var(--md-border-radius-medium);
+    padding: var(--md-spacing-md);
+    margin-bottom: var(--md-spacing-md);
+    box-shadow: var(--md-elevation-1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.content-management-container > div {
+    margin-bottom: var(--md-spacing-md);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--md-spacing-sm);
+}
+
+.content-management-container > div:last-child {
+    margin-bottom: 0;
+}
+
+/* 编辑器包装器 */
+#aceEditorWrapper,
+#kindEditorWrapper {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    border-radius: var(--md-border-radius-medium);
+    overflow: hidden;
+    box-shadow: var(--md-elevation-1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* 编辑器标题区域 */
+#aceEditorWrapper > div:first-child,
+#kindEditorWrapper > div:first-child {
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    color: var(--md-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: var(--md-spacing-sm);
+}

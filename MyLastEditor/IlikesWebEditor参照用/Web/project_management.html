@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理 - 权限设置</title>
+    <script src="js/jquery-4.0.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .project-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .project-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .project-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .project-card.selected {
+            border-color: #4CAF50;
+            background-color: #f0fff0;
+        }
+        .project-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .project-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .project-meta {
+            font-size: 12px;
+            color: #888;
+        }
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: bold;
+        }
+        .user-email {
+            font-size: 12px;
+            color: #666;
+        }
+        .permission-checkbox {
+            margin-left: 10px;
+        }
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+        .loading {
+            color: #2196F3;
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #f44336;
+            text-align: center;
+            padding: 20px;
+        }
+        .success {
+            color: #4CAF50;
+            text-align: center;
+            padding: 20px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .permission-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .permission-read {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .permission-write {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        .permission-admin {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 项目管理与权限设置</h1>
+        
+        <div class="section">
+            <div class="section-title">📁 项目列表</div>
+            <div class="button-group">
+                <button id="btnRefreshProjects">刷新项目列表</button>
+                <button id="btnNewProject">新建项目</button>
+                <button id="btnEditProject" disabled>编辑项目</button>
+                <button id="btnDeleteProject" class="danger" disabled>删除项目</button>
+            </div>
+            <div id="projectsContainer" class="project-list">
+                <div class="loading">加载项目中...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">👥 项目成员权限管理</div>
+            <div id="selectedProjectInfo" style="margin-bottom: 15px; display: none;">
+                <div style="font-weight: bold; margin-bottom: 5px;">当前选中的项目: <span id="currentProjectName"></span></div>
+                <div style="color: #666; font-size: 14px;" id="currentProjectDescription"></div>
+            </div>
+            
+            <div class="button-group">
+                <button id="btnAddUser" disabled>添加用户</button>
+                <button id="btnSavePermissions" class="secondary" disabled>保存权限设置</button>
+            </div>
+            
+            <input type="text" id="userSearch" class="search-box" placeholder="🔍 搜索用户..." disabled />
+            
+            <div id="usersContainer" class="user-list">
+                <div class="loading">请先选择一个项目</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">📊 权限说明</div>
+            <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                <div style="margin-bottom: 10px;">
+                    <span class="permission-badge permission-read">读取权限</span>
+                    <span>用户可以查看项目中的内容</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="permission-badge permission-write">写入权限</span>
+                    <span>用户可以创建和编辑项目中的内容</span>
+                </div>
+                <div>
+                    <span class="permission-badge permission-admin">管理权限</span>
+                    <span>用户可以管理项目成员和权限设置</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let selectedProjectId = null;
+            let allUsers = [];
+            let projectUsers = {};
+            
+            // 初始化
+            loadProjects();
+            loadAllUsers();
+            
+            // 绑定事件
+            $('#btnRefreshProjects').click(loadProjects);
+            $('#btnNewProject').click(showNewProjectDialog);
+            $('#btnEditProject').click(showEditProjectDialog);
+            $('#btnDeleteProject').click(deleteSelectedProject);
+            $('#btnAddUser').click(showAddUserDialog);
+            $('#btnSavePermissions').click(savePermissions);
+            
+            // 用户搜索
+            $('#userSearch').on('input', function() {
+                filterUsers($(this).val().trim());
+            });
+            
+            // 加载项目列表
+            function loadProjects() {
+                $('#projectsContainer').html('<div class="loading">加载项目中...</div>');
+                
+                $.ajax({
+                    type: "POST",
+                    url: "WebServ.asmx/GetAllProjects",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(response) {
+                        var result = response.d ? JSON.parse(response.d) : response;
+                        if (result.success) {
+                            displayProjects(result.projects);
+                        } else {
+                            $('#projectsContainer').html('<div class="error">加载失败: ' + result.message + '</div>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#projectsContainer').html('<div class="error">请求失败: ' + error + '</div>');
+                    }
+                });
+            }
+            
+            // 显示项目列表
+            function displayProjects(projects) {
+                if (!projects || projects.length === 0) {
+                    $('#projectsContainer').html('<div class="loading">暂无项目，点击"新建项目"按钮创建</div>');
+                    return;
+                }
+                
+                let html = '';
+                projects.forEach(function(project) {
+                    html += `
+                        <div class="project-card" data-project-id="${project.id}">
+                            <div class="project-name">${escapeHtml(project.name)}</div>
+                            <div class="project-description">${escapeHtml(project.description || '无描述')}</div>
+                            <div class="project-meta">
+                                创建者: ${escapeHtml(project.createdBy || '未知')} | 
+                                创建时间: ${project.createdDate || '未知'}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                $('#projectsContainer').html(html);
+                
+                // 绑定项目点击事件
+                $('.project-card').click(function() {
+                    const projectId = $(this).data('project-id');
+                    selectProject(projectId, $(this));
+                });
+            }
+            
+            // 选择项目
+            function selectProject(projectId, $card) {
+                // 更新选中状态
+                $('.project-card').removeClass('selected');
+                $card.addClass('selected');
+                
+                selectedProjectId = projectId;
+                
+                // 更新按钮状态
+                $('#btnEditProject').prop('disabled', false);
+                $('#btnDeleteProject').prop('disabled', false);
+                $('#btnAddUser').prop('disabled', false);
+                $('#btnSavePermissions').prop('disabled', false);
+                $('#userSearch').prop('disabled', false);
+                
+                // 显示项目信息
+                const projectName = $card.find('.project-name').text();
+                const projectDescription = $card.find('.project-description').text();
+                $('#currentProjectName').text(projectName);
+                $('#currentProjectDescription').text(projectDescription);
+                $('#selectedProjectInfo').show();
+                
+                // 加载项目成员
+                loadProjectUsers(projectId);
+            }
+            
+            // 加载所有用户
+            function loadAllUsers() {
+                // 这里需要调用获取所有用户的API
+                // 暂时使用模拟数据
+                allUsers = [
+                    { id: 1, username: 'admin', displayName: '管理员', email: 'admin@example.com' },
+                    { id: 2, username: 'user1', displayName: '用户1', email: 'user1@example.com' },
+                    { id: 3, username: 'user2', displayName: '用户2', email: 'user2@example.com' },
+                    { id: 4, username: 'user3', displayName: '用户3', email: 'user3@example.com' }
+                ];
+            }
+            
+            // 加载项目成员
+            function loadProjectUsers(projectId) {
+                $('#usersContainer').html('<div class="loading">加载项目成员中...</div>');
+                
+                // 这里需要调用获取项目成员的API
+                // 暂时使用模拟数据
+                setTimeout(function() {
+                    projectUsers[projectId] = [
+                        { userId: 1, permissions: ['read', 'write', 'admin'] },
+                        { userId: 2, permissions: ['read', 'write'] },
+                        { userId: 3, permissions: ['read'] }
+                    ];
+                    
+                    displayProjectUsers(projectId);
+                }, 500);
+            }
+            
+            // 显示项目成员
+            function displayProjectUsers(projectId) {
+                const users = projectUsers[projectId] || [];
+                const html = users.map(userPermission => {
+                    const user = allUsers.find(u => u.id === userPermission.userId);
+                    if (!user) return '';
+                    
+                    const permissionsHtml = userPermission.permissions.map(perm => {
+                        const badgeClass = {
+                            'read': 'permission-read',
+                            'write': 'permission-write',
+                            'admin': 'permission-admin'
+                        }[perm] || '';
+                        
+                        const badgeText = {
+                            'read': '读取',
+                            'write': '写入',
+                            'admin': '管理'
+                        }[perm] || perm;
+                        
+                        return `<span class="permission-badge ${badgeClass}">${badgeText}</span>`;
+                    }).join(' ');
+                    
+                    return `
+                        <div class="user-item" data-user-id="${user.id}">
+                            <div class="user-info">
+                                <div class="user-name">${escapeHtml(user.displayName)} (${escapeHtml(user.username)})</div>
+                                <div class="user-email">${escapeHtml(user.email)}</div>
+                            </div>
+                            <div class="permission-checkbox">
+                                ${permissionsHtml}
+                                <button class="remove-user" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 16px;" title="移除用户">×</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                $('#usersContainer').html(html || '<div class="loading">暂无项目成员</div>');
+                
+                // 绑定移除用户事件
+                $('.remove-user').click(function(e) {
+                    e.stopPropagation();
+                    const userId = $(this).closest('.user-item').data('user-id');
+                    removeUserFromProject(userId);
+                });
+            }
+            
+            // 过滤用户
+            function filterUsers(searchText) {
+                const $userItems = $('.user-item');
+                if (!searchText) {
+                    $userItems.show();
+                    return;
+                }
+                
+                const searchLower = searchText.toLowerCase();
+                $userItems.each(function() {
+                    const $item = $(this);
+                    const userName = $item.find('.user-name').text().toLowerCase();
+                    const userEmail = $item.find('.user-email').text().toLowerCase();
+                    
+                    if (userName.includes(searchLower) || userEmail.includes(searchLower)) {
+                        $item.show();
+                    } else {
+                        $item.hide();
+                    }
+                });
+            }
+            
+            // 显示新建项目对话框
+            function showNewProjectDialog() {
+                const projectName = prompt('请输入项目名称:', '');
+                if (!projectName || projectName.trim() === '') {
+                    return;
+                }
+                
+                const projectDescription = prompt('请输入项目描述（可选）:', '');
+                
+                createProject(projectName.trim(), projectDescription ? projectDescription.trim() : '');
+            }
+            
+            // 创建新项目
+            function createProject(name, description) {
+                $.ajax({
+                    type: "POST",
+                    url: "WebServ.asmx/CreateProject",
+                    data: JSON.stringify({
+                        name: name,
+                        description: description
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(response) {
+                        var result = response.d ? JSON.parse(response.d) : response;
+                        if (result.success) {
+                            alert('项目创建成功');
+                            loadProjects();
+                        } else {
+                            alert('项目创建失败: ' + result.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('创建项目请求失败: ' + error);
+                    }
+                });
+            }
+            
+            // 显示编辑项目对话框
+            function showEditProjectDialog() {
+                if (!selectedProjectId) return;
+                
+                const $selectedCard = $('.project-card.selected');
+                const currentName = $selectedCard.find('.project-name').text();
+                const currentDescription = $selectedCard.find('.project-description').text();
+                
+                const newName = prompt('请输入新的项目名称:', currentName);
+                if (!newName || newName.trim() === '') {
+                    return;
+                }
+                
+                const newDescription = prompt('请输入新的项目描述（可选）:', currentDescription === '无描述' ? '' : currentDescription);
+                
+                updateProject(selectedProjectId, newName.trim(), newDescription ? newDescription.trim() : '');
+            }
+            
+            // 更新项目
+            function updateProject(id, name, description) {
+                $.ajax({
+                    type: "POST",
+                    url: "WebServ.asmx/UpdateProject",
+                    data: JSON.stringify({
+                        id: id,
+                        name: name,
+                        description: description
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(response) {
+                        var result = response.d ? JSON.parse(response.d) : response;
+                        if (result.success) {
+                            alert('项目更新成功');
+                            loadProjects();
+                        } else {
+                            alert('项目更新失败: ' + result.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('更新项目

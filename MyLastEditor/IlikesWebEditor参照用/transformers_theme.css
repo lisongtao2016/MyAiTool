@@ -1,0 +1,996 @@
+/* 变形金刚主题 - Transformers Theme */
+/* 设计理念：红蓝经典配色 + 机械动画效果 + 科技感 */
+
+/* 基础颜色定义 */
+:root {
+    /* 变形金刚经典配色 */
+    --tf-red: #e62429;      /* 擎天柱红 */
+    --tf-blue: #0066b3;     /* 擎天柱蓝 */
+    --tf-silver: #a5a5a5;   /* 金属银 */
+    --tf-dark: #1a1a1a;     /* 深黑 */
+    --tf-light: #f0f0f0;    /* 亮灰 */
+    --tf-yellow: #ffd700;   /* 博派黄 */
+    --tf-purple: #8a2be2;   /* 狂派紫 */
+    
+    /* 渐变 */
+    --tf-gradient-red-blue: linear-gradient(135deg, var(--tf-red) 0%, var(--tf-blue) 100%);
+    --tf-gradient-metal: linear-gradient(135deg, #333333 0%, #666666 50%, #999999 100%);
+    --tf-gradient-tech: linear-gradient(90deg, 
+        rgba(0, 102, 179, 0.8) 0%, 
+        rgba(230, 36, 41, 0.8) 50%, 
+        rgba(0, 102, 179, 0.8) 100%);
+    
+    /* 阴影 */
+    --tf-shadow-red: 0 0 15px rgba(230, 36, 41, 0.7);
+    --tf-shadow-blue: 0 0 15px rgba(0, 102, 179, 0.7);
+    --tf-shadow-metal: 0 0 20px rgba(165, 165, 165, 0.5);
+    --tf-shadow-glow: 0 0 30px rgba(230, 36, 41, 0.9), 0 0 60px rgba(0, 102, 179, 0.7);
+}
+
+/* 全局变形金刚风格重置 */
+body.tf-theme {
+    font-family: 'Orbitron', 'Arial Black', sans-serif;
+    background: var(--tf-dark);
+    color: var(--tf-light);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 机械网格背景 */
+body.tf-theme::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(230, 36, 41, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 36, 41, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 50px 50px;
+    }
+}
+
+/* 容器 - 机械装甲风格 */
+.container.tf-theme {
+    width: 98%;
+    max-width: 98%;
+    height: 98vh;
+    margin: 1vh auto;
+    background: rgba(26, 26, 26, 0.9);
+    border: 3px solid var(--tf-red);
+    border-radius: 0;
+    box-shadow: 
+        var(--tf-shadow-red),
+        inset 0 0 30px rgba(0, 0, 0, 0.8);
+    padding: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 98vh;
+    overflow: hidden;
+}
+
+/* 机械边框效果 */
+.container.tf-theme::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: var(--tf-gradient-tech);
+    z-index: -1;
+    animation: borderGlow 3s ease-in-out infinite alternate;
+    border-radius: 3px;
+}
+
+@keyframes borderGlow {
+    0% {
+        opacity: 0.3;
+        filter: blur(5px);
+    }
+    100% {
+        opacity: 0.7;
+        filter: blur(10px);
+    }
+}
+
+/* 侧边栏 - 机械控制面板 */
+.sidebar.tf-theme {
+    width: 280px;
+    background: rgba(0, 0, 0, 0.8);
+    border-right: 3px solid var(--tf-blue);
+    padding: 16px 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-height: 0;
+    height: 100%;
+    border-radius: 0;
+    position: relative;
+    box-shadow: 
+        var(--tf-shadow-blue),
+        inset 0 0 20px rgba(0, 102, 179, 0.3);
+}
+
+/* 侧边栏标题 - 机械字体 */
+.sidebar-title.tf-theme {
+    font-weight: 900;
+    color: var(--tf-red);
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 
+        0 0 10px var(--tf-red),
+        0 0 20px var(--tf-red);
+    animation: textPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes textPulse {
+    0% {
+        text-shadow: 
+            0 0 5px var(--tf-red),
+            0 0 10px var(--tf-red);
+    }
+    100% {
+        text-shadow: 
+            0 0 15px var(--tf-red),
+            0 0 30px var(--tf-red),
+            0 0 45px var(--tf-red);
+    }
+}
+
+/* 侧边栏切换按钮 - 机械开关 */
+.sidebar-toggle.tf-theme {
+    background: var(--tf-gradient-metal);
+    border: 2px solid var(--tf-silver);
+    color: var(--tf-light);
+    width: 35px;
+    height: 35px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    box-shadow: 
+        0 0 10px rgba(165, 165, 165, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-toggle.tf-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.sidebar-toggle.tf-theme:hover::before {
+    left: 100%;
+}
+
+.sidebar-toggle.tf-theme:hover {
+    background: var(--tf-gradient-red-blue);
+    border-color: var(--tf-red);
+    box-shadow: 
+        var(--tf-shadow-glow),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* 搜索框 - 机械扫描仪 */
+.search-box.tf-theme {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--tf-blue);
+    border-radius: 0;
+    color: var(--tf-light);
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 0 0 10px rgba(0, 102, 179, 0.3),
+        0 0 15px rgba(0, 102, 179, 0.5);
+    letter-spacing: 1px;
+}
+
+.search-box.tf-theme:focus {
+    border-color: var(--tf-red);
+    box-shadow: 
+        inset 0 0 20px rgba(230, 36, 41, 0.5),
+        0 0 30px rgba(230, 36, 41, 0.7),
+        0 0 60px rgba(230, 36, 41, 0.4);
+    transform: scale(1.02);
+    animation: searchScan 2s linear infinite;
+}
+
+@keyframes searchScan {
+    0%, 100% {
+        box-shadow: 
+            inset 0 0 20px rgba(230, 36, 41, 0.5),
+            0 0 30px rgba(230, 36, 41, 0.7),
+            0 0 60px rgba(230, 36, 41, 0.4);
+    }
+    50% {
+        box-shadow: 
+            inset 0 0 20px rgba(0, 102, 179, 0.5),
+            0 0 30px rgba(0, 102, 179, 0.7),
+            0 0 60px rgba(0, 102, 179, 0.4);
+    }
+}
+
+.search-box.tf-theme::placeholder {
+    color: rgba(165, 165, 165, 0.7);
+    font-style: italic;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* 按钮 - 机械控制按钮 */
+.cyber-button.tf-theme {
+    padding: 12px 24px !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    border: 2px solid var(--tf-silver) !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    font-family: 'Orbitron', monospace !important;
+    box-shadow: 
+        0 0 15px rgba(165, 165, 165, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: var(--tf-light) !important;
+}
+
+.cyber-button.tf-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.cyber-button.tf-theme:hover::before {
+    left: 100%;
+}
+
+.cyber-button-primary.tf-theme {
+    background: var(--tf-gradient-red-blue) !important;
+    color: var(--tf-light) !important;
+    border-color: var(--tf-red) !important;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.cyber-button-primary.tf-theme:hover {
+    background: var(--tf-gradient-tech) !important;
+    border-color: var(--tf-blue) !important;
+    box-shadow: 
+        var(--tf-shadow-glow),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-3px) scale(1.05);
+    animation: buttonPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes buttonPulse {
+    0% {
+        box-shadow: 
+            0 0 15px rgba(230, 36, 41, 0.7),
+            0 0 30px rgba(0, 102, 179, 0.5),
+            inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    100% {
+        box-shadow: 
+            0 0 25px rgba(230, 36, 41, 0.9),
+            0 0 50px rgba(0, 102, 179, 0.7),
+            0 0 75px rgba(230, 36, 41, 0.5),
+            inset 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+}
+
+.cyber-button-save.tf-theme {
+    background: var(--tf-gradient-metal) !important;
+    color: var(--tf-light) !important;
+    border-color: var(--tf-silver) !important;
+}
+
+.cyber-button-save.tf-theme:hover {
+    background: var(--tf-gradient-red-blue) !important;
+    border-color: var(--tf-red) !important;
+    box-shadow: 
+        var(--tf-shadow-glow),
+        inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* 输入框 - 机械数据输入 */
+#contentTitle.tf-theme,
+#contentSubtitle.tf-theme,
+#contentAuthor.tf-theme,
+#contentHotTags.tf-theme,
+#contentShareTo.tf-theme {
+    padding: 8px 12px;
+    border: 2px solid var(--tf-blue);
+    border-radius: 0;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    outline: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--tf-light);
+    font-family: 'Orbitron', monospace;
+    width: calc(100% - 140px);
+    box-shadow: 
+        inset 0 0 10px rgba(0, 102, 179, 0.2),
+        0 0 10px rgba(0, 102, 179, 0.3);
+}
+
+#contentTitle.tf-theme:focus,
+#contentSubtitle.tf-theme:focus,
+#contentAuthor.tf-theme:focus,
+#contentHotTags.tf-theme:focus,
+#contentShareTo.tf-theme:focus {
+    border-color: var(--tf-red);
+    box-shadow: 
+        inset 0 0 15px rgba(230, 36, 41, 0.3),
+        0 0 20px rgba(230, 36, 41, 0.5),
+        0 0 40px rgba(230, 36, 41, 0.3);
+    transform: scale(1.02);
+    animation: inputGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes inputGlow {
+    0% {
+        box-shadow: 
+            inset 0 0 15px rgba(230, 36, 41, 0.3),
+            0 0 20px rgba(230, 36, 41, 0.5),
+            0 0 40px rgba(230, 36, 41, 0.3);
+    }
+    100% {
+        box-shadow: 
+            inset 0 0 20px rgba(230, 36, 41, 0.5),
+            0 0 30px rgba(230, 36, 41, 0.7),
+            0 0 60px rgba(230, 36, 41, 0.4);
+    }
+}
+
+/* 内容列表容器 - 机械数据面板 */
+#contentListContainer.tf-theme {
+    margin-top: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    animation: panelSlideIn 0.5s ease;
+}
+
+@keyframes panelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#contentList.tf-theme {
+    flex: 1;
+    overflow-y: auto;
+    border: 3px solid var(--tf-red) !important;
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 
+        var(--tf-shadow-red),
+        inset 0 0 30px rgba(230, 36, 41, 0.1),
+        inset 0 0 60px rgba(0, 102, 179, 0.1);
+    min-height: 200px;
+    padding: 8px;
+    position: relative;
+}
+
+/* 机械扫描线效果 */
+#contentList.tf-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--tf-red), transparent);
+    z-index: 10;
+    animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine {
+    0% {
+        top: 0;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+/* 内容列表项 - 机械数据行 */
+.content-list-container.tf-theme {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: visible !important;
+}
+
+.content-list-item.tf-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--tf-blue);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 50px;
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: 'Orbitron', monospace;
+    color: var(--tf-light);
+}
+
+.content-list-item.tf-theme:hover {
+    /* 鼠标悬停时整行宽度变为浏览器窗口的50% - 显示详细信息 */
+    width: 50vw !important;
+    max-width: 50vw;
+    min-width: 50vw;
+    min-height: 180px !important; /* 增加高度以容纳详细信息 */
+    z-index: 9999 !important;
+    background: rgba(0, 0, 0, 0.95);
+    box-shadow: 
+        var(--tf-shadow-glow),
+        inset 0 0 30px rgba(230, 36, 41, 0.2),
+        inset 0 0 60px rgba(0, 102, 179, 0.1);
+    border: 2px solid var(--tf-red);
+    padding: 16px 20px;
+    transform: translateX(0) scale(1.02);
+    animation: tfExpandRow 0.3s ease forwards;
+    position: relative;
+    margin-right: -25vw;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+@keyframes tfExpandRow {
+    from {
+        transform: translateX(0) scale(1);
+        opacity: 0.8;
+        box-shadow: 
+            0 0 10px rgba(230, 36, 41, 0.5),
+            inset 0 0 10px rgba(0, 102, 179, 0.1);
+        min-height: 50px;
+    }
+    to {
+        transform: translateX(0) scale(1.02);
+        opacity: 1;
+        box-shadow: 
+            var(--tf-shadow-glow),
+            inset 0 0 30px rgba(230, 36, 41, 0.2),
+            inset 0 0 60px rgba(0, 102, 179, 0.1);
+        min-height: 180px;
+    }
+}
+
+/* 详细信息容器 */
+.content-details-container {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 102, 179, 0.5);
+    animation: detailsFadeIn 0.3s ease forwards;
+}
+
+@keyframes detailsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-list-item.tf-theme:hover .content-details-container {
+    display: block;
+}
+
+/* 详细信息网格布局 */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.detail-label {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: var(--tf-blue);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 80px;
+    margin-right: 10px;
+    text-shadow: 0 0 5px var(--tf-blue);
+}
+
+.detail-value {
+    font-family: 'Orbitron', monospace;
+    color: var(--tf-light);
+    font-size: 12px;
+    flex: 1;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.detail-value.highlight {
+    color: var(--tf-red);
+    font-weight: 700;
+    text-shadow: 0 0 5px var(--tf-red);
+}
+
+/* 内容区域调整 */
+.content-list-item.tf-theme:hover .content-area {
+    overflow: visible;
+    margin-bottom: 8px;
+}
+
+.content-title.tf-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Orbitron', monospace !important;
+    font-weight: 700;
+    color: var(--tf-light);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px var(--tf-blue);
+}
+
+.content-list-item.tf-theme:hover .content-title.tf-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: var(--tf-red);
+    text-shadow: 
+        0 0 10px var(--tf-red),
+        0 0 20px var(--tf-red);
+    animation: titleGlow 1s ease-in-out infinite alternate;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.content-subtitle.tf-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: italic;
+    font-family: 'Orbitron', monospace !important;
+    color: var(--tf-silver);
+    font-size: 12px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all 0.3s ease;
+}
+
+.content-list-item.tf-theme:hover .content-subtitle.tf-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: var(--tf-blue);
+    text-shadow: 0 0 10px var(--tf-blue);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+/* 内容区域 - 机械数据显示 */
+.content-area.tf-theme {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.content-list-item.tf-theme:hover .content-area {
+    overflow: visible;
+}
+
+.content-title.tf-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Orbitron', monospace !important;
+    font-weight: 700;
+    color: var(--tf-light);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px var(--tf-blue);
+}
+
+.content-list-item.tf-theme:hover .content-title.tf-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: var(--tf-red);
+    text-shadow: 
+        0 0 10px var(--tf-red),
+        0 0 20px var(--tf-red);
+    animation: titleGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    0% {
+        text-shadow: 
+            0 0 5px var(--tf-red),
+            0 0 10px var(--tf-red);
+    }
+    100% {
+        text-shadow: 
+            0 0 15px var(--tf-red),
+            0 0 30px var(--tf-red),
+            0 0 45px var(--tf-red);
+    }
+}
+
+.content-subtitle.tf-theme {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: italic;
+    font-family: 'Orbitron', monospace !important;
+    color: var(--tf-silver);
+    font-size: 12px;
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    transition: all 0.3s ease;
+}
+
+.content-list-item.tf-theme:hover .content-subtitle.tf-theme {
+    overflow: visible;
+    white-space: normal;
+    max-width: none;
+    color: var(--tf-blue);
+    text-shadow: 0 0 10px var(--tf-blue);
+}
+
+/* 操作区域 - 机械控制 */
+.action-area.tf-theme {
+    flex-shrink: 0;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-icon-btn.tf-theme {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--tf-silver);
+    padding: 4px 8px;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(165, 165, 165, 0.3));
+}
+
+.delete-icon-btn.tf-theme:hover {
+    color: var(--tf-red) !important;
+    transform: scale(1.3) rotate(15deg);
+    filter: drop-shadow(0 4px 8px rgba(230, 36, 41, 0.5));
+    animation: deletePulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes deletePulse {
+    0% {
+        transform: scale(1.2) rotate(10deg);
+        filter: drop-shadow(0 3px 6px rgba(230, 36, 41, 0.4));
+    }
+    100% {
+        transform: scale(1.4) rotate(20deg);
+        filter: drop-shadow(0 5px 10px rgba(230, 36, 41, 0.7));
+    }
+}
+
+/* 滚动条 - 机械风格 */
+#contentList.tf-theme::-webkit-scrollbar {
+    width: 12px;
+}
+
+#contentList.tf-theme::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--tf-blue);
+    border-radius: 0;
+}
+
+#contentList.tf-theme::-webkit-scrollbar-thumb {
+    background: var(--tf-gradient-red-blue);
+    border: 1px solid var(--tf-silver);
+    border-radius: 0;
+    box-shadow: 
+        inset 0 0 10px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(230, 36, 41, 0.5);
+}
+
+#contentList.tf-theme::-webkit-scrollbar-thumb:hover {
+    background: var(--tf-gradient-tech);
+    box-shadow: 
+        inset 0 0 15px rgba(0, 0, 0, 0.7),
+        0 0 15px rgba(230, 36, 41, 0.7),
+        0 0 30px rgba(0, 102, 179, 0.5);
+}
+
+/* 编辑器区域 - 机械控制台 */
+#editor.tf-theme {
+    margin-top: 0;
+    border: 2px solid var(--tf-blue);
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 
+        var(--tf-shadow-blue),
+        inset 0 0 30px rgba(0, 102, 179, 0.1);
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* 语言选择器 - 机械切换 */
+#languageSelect.tf-theme {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--tf-blue);
+    border-radius: 0;
+    color: var(--tf-light);
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    width: auto;
+    min-width: 150px;
+    box-shadow: 
+        inset 0 0 10px rgba(0, 102, 179, 0.2),
+        0 0 10px rgba(0, 102, 179, 0.3);
+}
+
+#languageSelect.tf-theme:hover {
+    border-color: var(--tf-red);
+    box-shadow: 
+        inset 0 0 15px rgba(230, 36, 41, 0.3),
+        0 0 20px rgba(230, 36, 41, 0.5);
+}
+
+#languageSelect.tf-theme:focus {
+    border-color: var(--tf-red);
+    box-shadow: 
+        inset 0 0 20px rgba(230, 36, 41, 0.5),
+        0 0 30px rgba(230, 36, 41, 0.7),
+        0 0 60px rgba(230, 36, 41, 0.4);
+    transform: scale(1.02);
+}
+
+/* 无内容消息 */
+.no-content-message.tf-theme {
+    color: var(--tf-silver);
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 14px;
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--tf-blue);
+}
+
+/* 编辑中高亮样式 */
+.editing-highlight.tf-theme {
+    color: var(--tf-red) !important;
+    font-weight: bold !important;
+    text-shadow: 
+        0 0 10px var(--tf-red),
+        0 0 20px var(--tf-red) !important;
+    animation: editingPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes editingPulse {
+    0% {
+        text-shadow: 
+            0 0 5px var(--tf-red),
+            0 0 10px var(--tf-red);
+    }
+    100% {
+        text-shadow: 
+            0 0 15px var(--tf-red),
+            0 0 30px var(--tf-red),
+            0 0 45px var(--tf-red);
+    }
+}
+
+/* 变形金刚Logo效果 */
+.tf-logo {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: var(--tf-gradient-red-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tf-light);
+    font-size: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+    box-shadow: 
+        var(--tf-shadow-glow),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: logoFloat 3s ease-in-out infinite alternate;
+    cursor: pointer;
+    user-select: none;
+}
+
+@keyframes logoFloat {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        box-shadow: 
+            0 0 20px rgba(230, 36, 41, 0.7),
+            0 0 40px rgba(0, 102, 179, 0.5),
+            inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    100% {
+        transform: translateY(-10px) rotate(5deg);
+        box-shadow: 
+            0 0 30px rgba(230, 36, 41, 0.9),
+            0 0 60px rgba(0, 102, 179, 0.7),
+            0 0 90px rgba(230, 36, 41, 0.5),
+            inset 0 0 30px rgba(0, 0, 0, 0.7);
+    }
+}
+
+.tf-logo:hover {
+    animation: logoTransform 1s ease-in-out infinite alternate;
+}
+
+@keyframes logoTransform {
+    0% {
+        transform: scale(1) rotate(0deg);
+        border-radius: 50%;
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+        border-radius: 10%;
+    }
+    100% {
+        transform: scale(1) rotate(360deg);
+        border-radius: 50%;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container.tf-theme {
+        flex-direction: column;
+    }
+    
+    .sidebar.tf-theme {
+        width: 100% !important;
+        border-right: none;
+        border-bottom: 3px solid var(--tf-blue);
+        max-height: 300px;
+    }
+    
+    .content-list-item.tf-theme:hover {
+        width: 90vw !important;
+        max-width: 90vw;
+        min-width: 90vw;
+        margin-right: -45vw;
+    }
+    
+    .tf-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+/* 加载状态 */
+@keyframes tfPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+}
+
+button:disabled.tf-theme {
+    animation: tfPulse 1.5s infinite;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 文本选择效果 */
+::selection.tf-theme {
+    background: rgba(230, 36, 41, 0.3);
+    color: var(--tf-light);
+}
+
+::-moz-selection.tf-theme {
+    background: rgba(230, 36, 41, 0.3);
+    color: var(--tf-light);
+}
