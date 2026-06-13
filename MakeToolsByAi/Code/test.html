@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #00aa00;
+        }
+        .fail {
+            background: #ff0000;
+        }
+        .info {
+            background: #0f3460;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 模拟三国 - 功能测试页面</h1>
+    
+    <div class="test-section">
+        <h2>📦 文件加载测试</h2>
+        <div id="file-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚙️ 配置测试</h2>
+        <div id="config-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🗺️ 地图系统测试</h2>
+        <div id="map-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🏗️ 设施系统测试</h2>
+        <div id="facility-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 渲染测试</h2>
+        <canvas id="test-canvas" width="400" height="300" style="border: 2px solid #ffd700;"></canvas>
+        <div id="render-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 快速测试</h2>
+        <button onclick="runAllTests()">运行全部测试</button>
+        <button onclick="openGame()">打开游戏</button>
+        <button onclick="clearResults()">清除结果</button>
+    </div>
+
+    <script src="libs/jquery.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/terrain.js"></script>
+    <script src="js/facility.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/renderer.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function addResult(testName, passed, message) {
+            const result = {
+                name: testName,
+                passed: passed,
+                message: message
+            };
+            testResults.push(result);
+            
+            const div = $('<div>')
+                .addClass(`test-result ${passed ? 'pass' : 'fail'}`)
+                .html(`<strong>${passed ? '✅' : '❌'} ${testName}</strong><br>${message}`);
+            
+            return div;
+        }
+
+        function testFileLoading() {
+            const container = $('#file-tests');
+            container.empty();
+
+            // 测试 jQuery
+            if (typeof $ !== 'undefined') {
+                container.append(addResult('jQuery 加载', true, 'jQuery 版本: ' + $.fn.jquery));
+            } else {
+                container.append(addResult('jQuery 加载', false, 'jQuery 未加载'));
+            }
+
+            // 测试 CONFIG
+            if (typeof CONFIG !== 'undefined') {
+                container.append(addResult('配置文件', true, 
+                    `地图尺寸: ${CONFIG.MAP.WIDTH}x${CONFIG.MAP.HEIGHT}, 格子大小: ${CONFIG.MAP.CELL_SIZE}px`));
+            } else {
+                container.append(addResult('配置文件', false, 'CONFIG 未定义'));
+            }
+        }
+
+        function testConfig() {
+            const container = $('#config-tests');
+            container.empty();
+
+            // 测试地形配置
+            const terrainCount = Object.keys(CONFIG.TERRAIN).length;
+            container.append(addResult('地形配置', terrainCount === 5, 
+                `定义了 ${terrainCount} 种地形（期望5种）`));
+
+            // 测试设施配置
+            const facilityCount = Object.keys(CONFIG.FACILITY).length;
+            container.append(addResult('设施配置', facilityCount === 7, 
+                `定义了 ${facilityCount} 种设施（期望7种）`));
+
+            // 测试工具函数
+            const utilsTest = typeof formatNumber === 'function' && typeof clamp === 'function';
+            container.append(addResult('工具函数', utilsTest, 
+                utilsTest ? 'formatNumber, clamp 等函数可用' : '部分工具函数缺失'));
+        }
+
+        function testMapSystem() {
+            const container = $('#map-tests');
+            container.empty();
+
+            try {
+                // 创建小型测试地图
+                const testMap = new GameMap();
+                testMap.width = 100;
+                testMap.height = 100;
+                
+                container.append(addResult('地图初始化', true, 
+                    `地图对象创建成功 (${testMap.width}x${testMap.height})`));
+
+                // 测试地形设置
+                testMap.terrain.setTerrain(10, 10, 'forest');
+                const terrain = testMap.terrain.getTerrainConfig(10, 10);
+                container.append(addResult('地形设置', terrain.type === 'forest', 
+                    `地形类型: ${terrain.name}, 移动消耗: ${terrain.moveCost}`));
+
+                // 测试坐标转换
+                const gridPos = testMap.screenToGrid(100, 100);
+                container.append(addResult('坐标转换', true, 
+                    `屏幕(100,100) → 网格(${gridPos.x},${gridPos.y})`));
+
+                // 测试相机
+                testMap.moveCamera(50, 50);
+                container.append(addResult('相机移动', true, 
+                    `相机位置: (${testMap.camera.x.toFixed(0)}, ${testMap.camera.y.toFixed(0)})`));
+
+            } catch (e) {
+                container.append(addResult('地图系统', false, `错误: ${e.message}`));
+            }
+        }
+
+        function testFacilitySystem() {
+            const container = $('#facility-tests');
+            container.empty();
+
+            try {
+                const facilities = new FacilitySystem();
+                
+                // 测试建造设施
+                const built = facilities.buildFacility(5, 5, 'farm');
+                container.append(addResult('设施建造', built, 
+                    built ? '农场建造成功' : '建造失败'));
+
+                // 测试获取设施
+                const facility = facilities.getFacility(5, 5);
+                container.append(addResult('设施查询', facility !== null, 
+                    facility ? `找到设施: ${facility.name}` : '未找到设施'));
+
+                // 测试设施数量
+                const count = facilities.getCount();
+                container.append(addResult('设施统计', count === 1, 
+                    `当前设施数量: ${count}`));
+
+            } catch (e) {
+                container.append(addResult('设施系统', false, `错误: ${e.message}`));
+            }
+        }
+
+        function testRendering() {
+            const container = $('#render-tests');
+            container.empty();
+
+            try {
+                const canvas = document.getElementById('test-canvas');
+                const ctx = canvas.getContext('2d');
+
+                // 清空画布
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 绘制测试网格
+                ctx.strokeStyle = '#0f3460';
+                ctx.lineWidth = 1;
+                
+                for (let i = 0; i < canvas.width; i += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                
+                for (let i = 0; i < canvas.height; i += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // 绘制测试地形
+                const colors = ['#90EE90', '#228B22', '#4169E1', '#696969'];
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillStyle = colors[i];
+                    ctx.fillRect(50 + i * 80, 50, 60, 60);
+                }
+
+                container.append(addResult('Canvas 渲染', true, 
+                    '测试网格和地形已绘制'));
+
+            } catch (e) {
+                container.append(addResult('渲染测试', false, `错误: ${e.message}`));
+            }
+        }
+
+        function runAllTests() {
+            testResults = [];
+            console.log('=== 开始运行全部测试 ===');
+            
+            testFileLoading();
+            testConfig();
+            testMapSystem();
+            testFacilitySystem();
+            testRendering();
+            
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            
+            console.log(`测试完成: ${passed}/${total} 通过`);
+            
+            // 显示总结
+            const summary = $(`<div class="test-result info">
+                <h3>📊 测试总结</h3>
+                <p>总测试数: ${total}</p>
+                <p>通过: ${passed}</p>
+                <p>失败: ${total - passed}</p>
+                <p>通过率: ${((passed/total)*100).toFixed(1)}%</p>
+            </div>`);
+            
+            $('.test-section:last').before(summary);
+        }
+
+        function openGame() {
+            window.open('index.html', '_blank');
+        }
+
+        function clearResults() {
+            testResults = [];
+            $('.test-result').remove();
+        }
+
+        // 页面加载后自动运行基础测试
+        $(document).ready(function() {
+            setTimeout(() => {
+                testFileLoading();
+                testConfig();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

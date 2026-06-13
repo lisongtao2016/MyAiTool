@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>渲染测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #2d5016;
+            border: 1px solid #4a7c59;
+        }
+        .error {
+            background: #501616;
+            border: 1px solid #7c4a4a;
+        }
+        .info {
+            background: #163050;
+            border: 1px solid #4a6b7c;
+        }
+        canvas {
+            border: 2px solid #4a7c59;
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4a7c59;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #5a8c69;
+        }
+        #log {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 渲染系统测试</h1>
+    
+    <div class="test-section">
+        <h2>测试1: Canvas 基础渲染</h2>
+        <canvas id="test-canvas" width="400" height="300"></canvas>
+        <button onclick="testBasicCanvas()">运行测试</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试2: 六边形绘制</h2>
+        <canvas id="hex-canvas" width="400" height="300"></canvas>
+        <button onclick="testHexagon()">运行测试</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试3: 地形配置检查</h2>
+        <button onclick="testTerrainConfig()">检查配置</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试4: 完整游戏初始化</h2>
+        <button onclick="testGameInit()">初始化游戏</button>
+        <div id="test4-result"></div>
+        <canvas id="game-test-canvas" width="800" height="600" style="display:none;"></canvas>
+    </div>
+
+    <div class="test-section">
+        <h2>日志输出</h2>
+        <button onclick="clearLog()">清空日志</button>
+        <div id="log"></div>
+    </div>
+
+    <script src="libs/jquery.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/terrain.js"></script>
+    <script src="js/facility.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/minimap.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.textContent = `[${timestamp}] ${message}`;
+            entry.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#fff';
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function showResult(elementId, success, message) {
+            const div = document.getElementById(elementId);
+            div.className = `status ${success ? 'success' : 'error'}`;
+            div.innerHTML = success ? `✅ ${message}` : `❌ ${message}`;
+        }
+
+        // 测试1: Canvas 基础渲染
+        function testBasicCanvas() {
+            try {
+                const canvas = document.getElementById('test-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 清空画布
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制一个红色矩形
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(50, 50, 100, 100);
+                
+                // 绘制文字
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '20px Arial';
+                ctx.fillText('Canvas 工作正常!', 50, 200);
+                
+                showResult('test1-result', true, 'Canvas 基础渲染成功');
+                log('测试1: Canvas 基础渲染 - 通过', 'success');
+            } catch (e) {
+                showResult('test1-result', false, `错误: ${e.message}`);
+                log(`测试1: Canvas 基础渲染 - 失败: ${e.message}`, 'error');
+            }
+        }
+
+        // 测试2: 六边形绘制
+        function testHexagon() {
+            try {
+                const canvas = document.getElementById('hex-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 清空画布
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制多个六边形
+                const colors = ['#98D98E', '#4A7C59', '#5B9BD5', '#8B7355', '#A0522D'];
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = 40;
+                
+                for (let i = 0; i < 5; i++) {
+                    const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * 80;
+                    const y = centerY + Math.sin(angle) * 80;
+                    
+                    // 绘制六边形
+                    ctx.beginPath();
+                    for (let j = 0; j < 6; j++) {
+                        const hexAngle = (Math.PI / 3) * j - Math.PI / 6;
+                        const hx = x + radius * Math.cos(hexAngle);
+                        const hy = y + radius * Math.sin(hexAngle);
+                        if (j === 0) ctx.moveTo(hx, hy);
+                        else ctx.lineTo(hx, hy);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = colors[i];
+                    ctx.fill();
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // 绘制图标
+                    ctx.font = '24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    const icons = ['🌱', '🌲', '💧', '⛰️', '🏯'];
+                    ctx.fillText(icons[i], x, y);
+                }
+                
+                showResult('test2-result', true, '六边形绘制成功');
+                log('测试2: 六边形绘制 - 通过', 'success');
+            } catch (e) {
+                showResult('test2-result', false, `错误: ${e.message}`);
+                log(`测试2: 六边形绘制 - 失败: ${e.message}`, 'error');
+            }
+        }
+
+        // 测试3: 地形配置检查
+        function testTerrainConfig() {
+            try {
+                const terrains = [
+                    CONFIG.TERRAIN.PLAIN,
+                    CONFIG.TERRAIN.FOREST,
+                    CONFIG.TERRAIN.WATER,
+                    CONFIG.TERRAIN.MOUNTAIN,
+                    CONFIG.TERRAIN.PASS
+                ];
+                
+                let html = '<ul>';
+                terrains.forEach(t => {
+                    const hasIcon = t.icon ? '✅' : '❌';
+                    html += `<li>${t.name} (${t.type}): 颜色=${t.color}, 图标=${hasIcon} ${t.icon || '无'}</li>`;
+                });
+                html += '</ul>';
+                
+                document.getElementById('test3-result').innerHTML = html;
+                showResult('test3-result', true, '地形配置检查完成');
+                log('测试3: 地形配置检查 - 通过', 'success');
+            } catch (e) {
+                showResult('test3-result', false, `错误: ${e.message}`);
+                log(`测试3: 地形配置检查 - 失败: ${e.message}`, 'error');
+            }
+        }
+
+        // 测试4: 完整游戏初始化
+        function testGameInit() {
+            try {
+                log('开始初始化游戏...', 'info');
+                
+                // 创建游戏地图
+                const gameMap = new GameMap();
+                log(`地图创建成功: ${gameMap.width}x${gameMap.height}`, 'success');
+                
+                // 创建渲染器
+                const canvas = document.getElementById('game-test-canvas');
+                canvas.style.display = 'block';
+                const renderer = new MapRenderer(canvas, gameMap);
+                log('渲染器创建成功', 'success');
+                
+                // 手动触发一次渲染
+                renderer.render();
+                log('首次渲染完成', 'success');
+                
+                // 检查缓存
+                if (renderer.terrainCache) {
+                    log(`缓存画布尺寸: ${renderer.terrainCache.width}x${renderer.terrainCache.height}`, 'info');
+                }
+                
+                showResult('test4-result', true, '游戏初始化成功！查看下方画布');
+                log('测试4: 游戏初始化 - 通过', 'success');
+                
+            } catch (e) {
+                showResult('test4-result', false, `错误: ${e.message}`);
+                log(`测试4: 游戏初始化 - 失败: ${e.message}`, 'error');
+                console.error(e);
+            }
+        }
+
+        // 页面加载完成后自动运行基础测试
+        window.onload = function() {
+            log('测试页面加载完成', 'info');
+            testBasicCanvas();
+            testHexagon();
+            testTerrainConfig();
+        };
+    </script>
+</body>
+</html>

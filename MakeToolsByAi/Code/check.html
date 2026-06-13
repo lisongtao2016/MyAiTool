@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>快速诊断</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: white; }
+        .check { margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 4px; }
+        .pass { border-left: 4px solid #4a7c59; }
+        .fail { border-left: 4px solid #7c4a4a; }
+    </style>
+</head>
+<body>
+    <h1>🔍 快速诊断</h1>
+    <div id="results"></div>
+    
+    <script src="libs/jquery.min.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addCheck(name, pass, message) {
+            const div = document.createElement('div');
+            div.className = `check ${pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `<strong>${pass ? '✅' : '❌'} ${name}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+        
+        // 检查1: jQuery
+        try {
+            if (typeof $ !== 'undefined') {
+                addCheck('jQuery', true, `版本加载成功`);
+            } else {
+                addCheck('jQuery', false, '未定义');
+            }
+        } catch(e) {
+            addCheck('jQuery', false, e.message);
+        }
+        
+        // 检查2: CONFIG
+        try {
+            if (typeof CONFIG !== 'undefined') {
+                addCheck('CONFIG', true, 
+                    `地图: ${CONFIG.MAP.WIDTH}x${CONFIG.MAP.HEIGHT}, ` +
+                    `格子大小: ${CONFIG.MAP.CELL_SIZE}px, ` +
+                    `网格类型: ${CONFIG.MAP.GRID_TYPE}`);
+            } else {
+                addCheck('CONFIG', false, '未定义');
+            }
+        } catch(e) {
+            addCheck('CONFIG', false, e.message);
+        }
+        
+        // 检查3: 地形配置
+        try {
+            if (CONFIG.TERRAIN) {
+                const terrains = Object.keys(CONFIG.TERRAIN);
+                let info = `共 ${terrains.length} 种地形: `;
+                terrains.forEach(t => {
+                    const hasIcon = CONFIG.TERRAIN[t].icon ? '✅' : '❌';
+                    info += `${t}${hasIcon} `;
+                });
+                addCheck('地形配置', true, info);
+            } else {
+                addCheck('地形配置', false, 'CONFIG.TERRAIN 未定义');
+            }
+        } catch(e) {
+            addCheck('地形配置', false, e.message);
+        }
+        
+        // 检查4: Canvas支持
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                addCheck('Canvas', true, '浏览器支持 Canvas 2D');
+            } else {
+                addCheck('Canvas', false, '无法获取 2D 上下文');
+            }
+        } catch(e) {
+            addCheck('Canvas', false, e.message);
+        }
+        
+        console.log('诊断完成');
+    </script>
+</body>
+</html>

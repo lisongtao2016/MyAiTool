@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟三国 - 战略游戏引擎</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <!-- 主容器 -->
+    <div id="game-container">
+        <!-- 顶部信息栏 -->
+        <div id="top-bar">
+            <div class="info-item">
+                <span class="label">回合:</span>
+                <span id="turn-count" class="value">1</span>
+            </div>
+            <div class="info-item">
+                <span class="label">金钱:</span>
+                <span id="gold" class="value">1000</span>
+            </div>
+            <div class="info-item">
+                <span class="label">粮草:</span>
+                <span id="food" class="value">500</span>
+            </div>
+            <div class="info-item">
+                <span class="label">选中地形:</span>
+                <span id="selected-terrain" class="value">未选择</span>
+            </div>
+        </div>
+
+        <!-- 主游戏区域 -->
+        <div id="main-area">
+            <!-- 地图画布容器 -->
+            <div id="map-container">
+                <canvas id="game-map"></canvas>
+            </div>
+
+            <!-- 右侧面板 -->
+            <div id="side-panel">
+                <!-- 小地图 -->
+                <div id="minimap-container">
+                    <canvas id="minimap"></canvas>
+                </div>
+
+                <!-- 操作面板 -->
+                <div id="action-panel">
+                    <h3>地图操作</h3>
+                    <div class="button-group">
+                        <button id="btn-view-mode" class="btn active">查看模式</button>
+                        <button id="btn-build-mode" class="btn">建造模式</button>
+                        <button id="btn-terrain-mode" class="btn">地形编辑</button>
+                    </div>
+                </div>
+
+                <!-- 建造选项 -->
+                <div id="build-options" style="display: none;">
+                    <h3>建造设施</h3>
+                    <div class="facility-list">
+                        <button class="facility-btn" data-type="farm">
+                            <div class="icon">🌾</div>
+                            <div class="name">农场</div>
+                            <div class="cost">💰50</div>
+                        </button>
+                        <button class="facility-btn" data-type="market">
+                            <div class="icon">🏪</div>
+                            <div class="name">市场</div>
+                            <div class="cost">💰80</div>
+                        </button>
+                        <button class="facility-btn" data-type="barracks">
+                            <div class="icon">⚔️</div>
+                            <div class="name">兵舍</div>
+                            <div class="cost">💰100</div>
+                        </button>
+                        <button class="facility-btn" data-type="forge">
+                            <div class="icon">🔨</div>
+                            <div class="name">锻冶厂</div>
+                            <div class="cost">💰120</div>
+                        </button>
+                        <button class="facility-btn" data-type="fort">
+                            <div class="icon">🏰</div>
+                            <div class="name">阵</div>
+                            <div class="cost">💰60</div>
+                        </button>
+                        <button class="facility-btn" data-type="arrow_tower">
+                            <div class="icon">🏹</div>
+                            <div class="name">箭楼</div>
+                            <div class="cost">💰150</div>
+                        </button>
+                        <button class="facility-btn" data-type="catapult">
+                            <div class="icon">💣</div>
+                            <div class="name">投石台</div>
+                            <div class="cost">💰200</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 地形编辑选项 -->
+                <div id="terrain-options" style="display: none;">
+                    <h3>地形类型</h3>
+                    <div class="terrain-list">
+                        <button class="terrain-btn" data-type="plain">
+                            <div class="color-box" style="background: #90EE90;"></div>
+                            <span>平原</span>
+                        </button>
+                        <button class="terrain-btn" data-type="forest">
+                            <div class="color-box" style="background: #228B22;"></div>
+                            <span>森林</span>
+                        </button>
+                        <button class="terrain-btn" data-type="water">
+                            <div class="color-box" style="background: #4169E1;"></div>
+                            <span>河流</span>
+                        </button>
+                        <button class="terrain-btn" data-type="mountain">
+                            <div class="color-box" style="background: #696969;"></div>
+                            <span>山地</span>
+                        </button>
+                        <button class="terrain-btn" data-type="pass">
+                            <div class="color-box" style="background: #8B4513;"></div>
+                            <span>关隘</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 格子信息 -->
+                <div id="cell-info">
+                    <h3>格子信息</h3>
+                    <div id="cell-details">
+                        <p>坐标: <span id="cell-coords">-</span></p>
+                        <p>地形: <span id="cell-terrain">-</span></p>
+                        <p>设施: <span id="cell-facility">无</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div id="bottom-bar">
+            <span id="status-text">就绪</span>
+            <span id="fps-counter">FPS: 60</span>
+        </div>
+    </div>
+
+    <!-- 确认对话框 -->
+    <div id="confirm-dialog" class="dialog" style="display: none;">
+        <div class="dialog-content">
+            <h3 id="dialog-title">确认</h3>
+            <p id="dialog-message">是否执行此操作？</p>
+            <div class="dialog-buttons">
+                <button id="dialog-confirm" class="btn btn-primary">确认</button>
+                <button id="dialog-cancel" class="btn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入库 -->
+    <script src="libs/jquery.min.js"></script>
+    
+    <!-- 引入游戏脚本 -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/terrain.js"></script>
+    <script src="js/facility.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/minimap.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
