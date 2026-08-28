@@ -1,0 +1,137 @@
+name: Code Equivalence Check
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write    # 需要写 PR 评论
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # 获取完整历史，以便对比 base branch
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic pydantic
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Export changed .py files and run Agent
+        id: agent_check
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: us-east5
+        run: |
+          # 获取 PR 中所有变更的 .py 文件
+          git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.py' > changed_files.txt
+          cat changed_files.txt
+
+          # 对每个变更文件，导出旧版（base）和新版（HEAD）并运行检查
+          python - <<'EOF'
+          import os, subprocess, sys
+
+          sys.stdout.reconfigure(encoding='utf-8')
+          base = os.environ.get('GITHUB_BASE_REF', 'main')
+
+          with open('changed_files.txt') as f:
+              files = [l.strip() for l in f if l.strip().endswith('.py')]
+
+          if not files:
+              print("No Python files changed.")
+              sys.exit(0)
+
+          # 动态注入 project_id 和 region
+          import importlib.util, types
+          spec = importlib.util.spec_from_file_location(
+              "agent_mod", "AiCheckAgent/code_checker_agent.py"
+          )
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+
+          agent = mod.CodeEquivalenceAgent(
+              project_id=os.environ['GCP_PROJECT_ID'],
+              region=os.environ['GCP_REGION'],
+          )
+
+          all_ok = True
+          report_lines = ["## Code Equivalence Agent Report\n"]
+
+          for rel_path in files:
+              try:
+                  old_src = subprocess.check_output(
+                      ['git', 'show', f'origin/{base}:{rel_path}']
+                  ).decode()
+                  new_src = subprocess.check_output(
+                      ['git', 'show', f'HEAD:{rel_path}']
+                  ).decode()
+              except subprocess.CalledProcessError:
+                  report_lines.append(f"- `{rel_path}`: 新文件，跳过对比\n")
+                  continue
+
+              import tempfile, os as _os
+              old_tmp = tempfile.NamedTemporaryFile(suffix='.py', delete=False,
+                                                    mode='w', encoding='utf-8')
+              new_tmp = tempfile.NamedTemporaryFile(suffix='.py', delete=False,
+                                                    mode='w', encoding='utf-8')
+              old_tmp.write(old_src); old_tmp.close()
+              new_tmp.write(new_src); new_tmp.close()
+
+              old_funcs = mod.FileParser.extract_functions(old_tmp.name)
+              new_funcs = mod.FileParser.extract_functions(new_tmp.name)
+              imports   = mod.FileParser.extract_imports(old_tmp.name)
+              _os.unlink(old_tmp.name); _os.unlink(new_tmp.name)
+
+              report_lines.append(f"\n### `{rel_path}`\n")
+              for fn in sorted(set(old_funcs) & set(new_funcs)):
+                  rpt = agent.check(old_funcs[fn], new_funcs[fn], fn,
+                                    extra_imports=imports)
+                  status = "✅ 等价" if rpt.is_equivalent else "❌ 不等价"
+                  report_lines.append(f"- **{fn}**: {status}\n")
+                  if not rpt.is_equivalent:
+                      all_ok = False
+                      for d in rpt.differences:
+                          report_lines.append(f"  - {d}\n")
+                      report_lines.append(f"  > **总结**: {rpt.summary}\n")
+
+          with open('agent_report.md', 'w', encoding='utf-8') as f:
+              f.writelines(report_lines)
+
+          if not all_ok:
+              sys.exit(1)
+          EOF
+
+      - name: Post report as PR comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.existsSync('agent_report.md')
+              ? fs.readFileSync('agent_report.md', 'utf8')
+              : '> Agent 报告生成失败，请查看 Actions 日志。';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Fail if logic differences found
+        if: steps.agent_check.outcome == 'failure'
+        run: |
+          echo "::error::Code Equivalence Agent 发现逻辑差异，请检查 PR 评论中的报告。"
+          exit 1
