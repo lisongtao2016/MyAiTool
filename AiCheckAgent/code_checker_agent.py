@@ -43,6 +43,7 @@ import ast
 import argparse
 import subprocess
 import tempfile
+import difflib
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
@@ -75,10 +76,21 @@ class TestCaseList(BaseModel):
     cases: List[TestCase]
 
 
+class LineDiff(BaseModel):
+    """单条行级差异"""
+    old_line_no: Optional[int] = Field(None, description="旧代码中的行号（从1开始，删除行填写，新增行为null）")
+    new_line_no: Optional[int] = Field(None, description="新代码中的行号（从1开始，新增行填写，删除行为null）")
+    old_code: Optional[str] = Field(None, description="旧代码行内容（删除行或修改前的行）")
+    new_code: Optional[str] = Field(None, description="新代码行内容（新增行或修改后的行）")
+    change_type: str = Field(description="变更类型: modify（修改）/ delete（删除）/ add（新增）")
+    impact: str = Field(description="该行变更对业务逻辑的影响说明")
+
+
 class LogicReport(BaseModel):
     """单个函数/机能的等价性诊断报告"""
     is_equivalent: bool = Field(description="新旧代码逻辑是否完全等价")
-    differences: List[str] = Field(description="列出所有逻辑差异、副作用差异或边界条件差异")
+    line_diffs: List[LineDiff] = Field(description="精确到行号的代码差异列表")
+    differences: List[str] = Field(description="高层业务逻辑差异总结（每条对应一类问题）")
     summary: str = Field(description="本次对比的综合总结说明")
 
 
@@ -124,6 +136,65 @@ class FeatureCheckResult(BaseModel):
 # ===========================================================================
 # Section 2 — AST 文件解析器
 # ===========================================================================
+
+def generate_diff(old_code: str, new_code: str,
+                  old_label: str = "旧代码", new_label: str = "新代码") -> str:
+    """
+    生成带行号的统一格式 diff（unified diff）。
+    每行前缀：
+      '-'  旧代码删除/修改行
+      '+'  新代码新增/修改行
+      ' '  上下文不变行
+    行号从 1 开始，格式 @@ -旧起始,行数 +新起始,行数 @@
+    """
+    old_lines = old_code.splitlines(keepends=True)
+    new_lines = new_code.splitlines(keepends=True)
+    diff_lines = list(difflib.unified_diff(
+        old_lines, new_lines,
+        fromfile=old_label, tofile=new_label,
+        lineterm="",
+        n=2,  # 每处变更前后各显示2行上下文
+    ))
+    return "\n".join(diff_lines) if diff_lines else "（代码完全相同，无 diff）"
+
+
+def annotate_diff_with_lineno(old_code: str, new_code: str) -> str:
+    """
+    生成带绝对行号的对照 diff，格式：
+      [旧 L8]  -    if amount <= 0:
+      [新 L8]  +    if amount < 0:
+    便于快速定位到具体行。
+    """
+    old_lines = old_code.splitlines()
+    new_lines = new_code.splitlines()
+
+    matcher = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False)
+    result_lines: List[str] = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        # 显示变更块前1行上下文
+        ctx_start = max(0, i1 - 1)
+        if ctx_start < i1:
+            result_lines.append(f"  [旧 L{ctx_start+1}]   {old_lines[ctx_start]}")
+
+        if tag in ("replace", "delete"):
+            for idx in range(i1, i2):
+                result_lines.append(f"  [旧 L{idx+1}] - {old_lines[idx]}")
+        if tag in ("replace", "insert"):
+            for idx in range(j1, j2):
+                result_lines.append(f"  [新 L{idx+1}] + {new_lines[idx]}")
+
+        # 显示变更块后1行上下文
+        ctx_end = min(len(old_lines) - 1, i2)
+        if ctx_end >= i2 and ctx_end < len(old_lines):
+            result_lines.append(f"  [旧 L{ctx_end+1}]   {old_lines[ctx_end]}")
+
+        result_lines.append("")  # 空行分隔各变更块
+
+    return "\n".join(result_lines) if result_lines else "（代码完全相同）"
+
 
 class FileParser:
     """
@@ -608,18 +679,35 @@ JSON Schema:
     ) -> LogicReport:
         json_schema = json.dumps(LogicReport.model_json_schema(), ensure_ascii=False)
 
+        # 生成带行号的 diff，注入 prompt 帮助 Claude 精确定位
+        annotated = annotate_diff_with_lineno(old_code, new_code)
+
+        # 为旧/新代码每行加上行号，方便 Claude 引用
+        def _with_lineno(code: str) -> str:
+            return "\n".join(
+                f"{i+1:>4} | {line}"
+                for i, line in enumerate(code.splitlines())
+            )
+
+        old_numbered = _with_lineno(old_code)
+        new_numbered = _with_lineno(new_code)
+
         prompt = f"""
 你是一个严谨的代码审查 Agent。请对比以下新旧代码，
 忽略语法糖/变量命名/排版，专注于业务逻辑与副作用是否一致。
 
-【旧代码】:
-```python
-{old_code}
+【旧代码（含行号）】:
 ```
-【新代码】:
-```python
-{new_code}
+{old_numbered}
 ```
+【新代码（含行号）】:
+```
+{new_numbered}
+```
+
+【行级 Diff（自动生成，直接标注了哪行删除/新增）】:
+{annotated}
+
 【黑盒测试发现的实际运行差异】:
 {json.dumps(blackbox_diffs, ensure_ascii=False, indent=2)}
 
@@ -628,10 +716,17 @@ JSON Schema:
 2. 逻辑分支漏掉或执行顺序改变
 3. 副作用差异（print、文件写入、全局变量修改等）
 
-输出要求：严格按照 JSON Schema 格式，不附带任何多余文字：
+输出要求：
+- 严格按照 JSON Schema 格式，不附带任何多余文字
+- line_diffs 中每条必须填写 old_line_no 或 new_line_no（从代码行号中读取），
+  old_code/new_code 填写该行的完整代码内容
+- differences 每条写一句高层总结，格式：「旧L行号 → 新L行号: 具体变化描述」
+- 如果代码完全等价，line_diffs 填空数组，differences 填空数组
+
+JSON Schema:
 {json_schema}
 """
-        raw = self._call_claude(prompt)
+        raw = self._call_claude(prompt, max_tokens=8192)
         data = self._parse_json(raw)
         return LogicReport(**data)
 
@@ -644,7 +739,12 @@ JSON Schema:
         new_code: str,
         func_name: str,
         extra_imports: str = "",
+        old_file: str = "",   # 传入显示用的文件名（含相对路径）
+        new_file: str = "",
     ) -> LogicReport:
+        # 先展示行级 diff（含文件名），让用户直观看到代码变了哪里
+        _print_diff(old_code, new_code, old_file=old_file, new_file=new_file)
+
         print(f"  [Step 1/3] Claude 生成测试用例...")
         cases = self.generate_test_cases(old_code, new_code)
         print(f"             已生成 {len(cases)} 组测试用例")
@@ -658,8 +758,10 @@ JSON Schema:
             if z3_result:
                 print(f"  [Z3] {z3_result}")
 
-        print(f"  [Step 3/3] Claude 白盒逻辑诊断...")
-        return self.analyze_logic(old_code, new_code, diffs)
+        print(f"  [Step 3/3] Claude 白盒逻辑诊断（含文件名+行号定位）...")
+        report = self.analyze_logic(old_code, new_code, diffs)
+        _print_report(report, old_file=old_file, new_file=new_file)
+        return report
 
     # ------------------------------------------------------------------
     # 对外接口 2：比对两个 .py 文件（逐函数）
@@ -685,11 +787,11 @@ JSON Schema:
 
         for func_name in common:
             print(f"\n{'=' * 56}\n  函数: {func_name}")
-            report = self.check(
+            self.check(
                 old_funcs[func_name], new_funcs[func_name],
                 func_name, extra_imports=old_imports,
+                old_file=old_path, new_file=new_path,
             )
-            _print_report(report)
 
     # ==================================================================
     # 对外接口 3：比对两个文件夹（四阶段 Pipeline）
@@ -942,8 +1044,11 @@ JSON Schema:
             # 统一使用旧代码的函数名作为沙箱入口（名称可能变了）
             entry_func = old_primary
 
-            # Phase D: 运行三步等价性检查
-            report = self.check(old_code, new_code, entry_func, extra_imports=old_imports)
+            # Phase D: 运行三步等价性检查（传入文件名用于行号显示）
+            report = self.check(
+                old_code, new_code, entry_func, extra_imports=old_imports,
+                old_file=old_feat.entry_file, new_file=new_feat.entry_file,
+            )
 
             result = FeatureCheckResult(
                 feature_name=pair.old_feature,
@@ -953,7 +1058,6 @@ JSON Schema:
                 report=report,
             )
             results.append(result)
-            _print_report(report)
 
         # ── 汇总报告 ────────────────────────────────────────────────
         _print_folder_summary(align, results)
@@ -995,8 +1099,8 @@ JSON Schema:
                     report = self.check(
                         old_funcs[func_name], new_funcs[func_name],
                         func_name, extra_imports=old_imports,
+                        old_file=rel_path, new_file=rel_path,
                     )
-                    _print_report(report)
                     if not report.is_equivalent:
                         all_equivalent = False
             finally:
@@ -1010,15 +1114,57 @@ JSON Schema:
 # Section 8 — 输出格式化
 # ===========================================================================
 
-def _print_report(report: LogicReport) -> None:
-    """将单个 LogicReport 以可读格式打印。"""
+def _print_diff(old_code: str, new_code: str,
+                old_file: str = "", new_file: str = "") -> None:
+    """在运行 Claude 之前，先打印行级 diff 供人工快速核查。"""
+    annotated = annotate_diff_with_lineno(old_code, new_code)
+    if "（代码完全相同）" in annotated:
+        return
+    file_hint = ""
+    if old_file or new_file:
+        o = old_file or new_file
+        n = new_file or old_file
+        file_hint = f"  📄 旧: {o}  →  新: {n}" if o != n else f"  📄 {o}"
+    print(f"\n  ┌─ 代码变更一览（行号定位）{file_hint}")
+    for line in annotated.splitlines():
+        print(f"  │{line}")
+    print("  └" + "─" * 40)
+
+
+def _print_report(report: LogicReport,
+                  old_file: str = "", new_file: str = "") -> None:
+    """打印等价性诊断报告，包含文件名、行级差异和高层总结。"""
     status = "✅ 等价" if report.is_equivalent else "❌ 不等价"
     print(f"\n  逻辑是否完全等价: {status}")
+
+    if report.line_diffs:
+        file_hint = ""
+        if old_file or new_file:
+            o = old_file or new_file
+            n = new_file or old_file
+            file_hint = f"  📄 旧: {o}  →  新: {n}" if o != n else f"  📄 {o}"
+        print(f"\n  ┌─ 行级差异明细（共 {len(report.line_diffs)} 处）{file_hint}")
+        for i, ld in enumerate(report.line_diffs, 1):
+            old_loc = f"旧L{ld.old_line_no}" if ld.old_line_no else "    "
+            new_loc = f"新L{ld.new_line_no}" if ld.new_line_no else "    "
+            icon = {"modify": "~", "delete": "-", "add": "+"}.get(ld.change_type, "?")
+            # 行位置：文件名:行号
+            old_ref = f"{old_file}:{ld.old_line_no}" if old_file and ld.old_line_no else old_loc
+            new_ref = f"{new_file}:{ld.new_line_no}" if new_file and ld.new_line_no else new_loc
+            print(f"  │ [{i:>2}] {icon}  {old_ref} → {new_ref}")
+            if ld.old_code:
+                print(f"  │       旧: {ld.old_code.strip()}")
+            if ld.new_code:
+                print(f"  │       新: {ld.new_code.strip()}")
+            print(f"  │       ↳ {ld.impact}")
+        print("  └" + "─" * 50)
+
     if report.differences:
-        print("  差异列表:")
+        print(f"\n  高层差异总结（共 {len(report.differences)} 类）:")
         for item in report.differences:
-            print(f"    - {item}")
-    print(f"  总结: {report.summary}")
+            print(f"    ● {item}")
+
+    print(f"\n  总结: {report.summary}")
 
 
 def _print_folder_summary(
@@ -1078,9 +1224,8 @@ def calculate_fee(amount, is_admin):
     return 0.0
 """
     print("\n===== 内置演示：calculate_fee =====")
-    report = agent.check(old_code, new_code, "calculate_fee")
-    print("\n" + "=" * 56)
-    _print_report(report)
+    agent.check(old_code, new_code, "calculate_fee",
+                old_file="[demo] old_code", new_file="[demo] new_code")
     print("=" * 56)
 
 
